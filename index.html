@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Project 40 Hardly</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +31,8 @@
     color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     min-height: 100vh;
-    padding-bottom: var(--nav-h);
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+    overscroll-behavior: none;
   }
 
   /* ── Header ── */
@@ -41,6 +44,7 @@
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border);
     padding: 14px 20px 10px;
+    padding-top: calc(14px + env(safe-area-inset-top));
   }
   .header-top {
     display: flex;
@@ -53,22 +57,14 @@
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 7px;
   }
-  .countdown-badge {
-    text-align: right;
-  }
-  .countdown-days {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--gold);
-    line-height: 1;
-  }
-  .countdown-label {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
+  .countdown-badge { text-align: right; }
+  .countdown-days { font-size: 22px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .countdown-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+
   .date-nav {
     display: flex;
     align-items: center;
@@ -81,21 +77,22 @@
     color: var(--text-dim);
     font-size: 20px;
     cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 6px 14px;
+    border-radius: 8px;
     transition: color 0.15s;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .date-nav button:hover { color: var(--gold); }
   .date-nav button:disabled { opacity: 0.2; cursor: default; }
-  .date-display {
-    font-size: 15px;
-    font-weight: 500;
-    color: var(--text);
-  }
+  .date-display { font-size: 15px; font-weight: 500; color: var(--text); }
   .date-today-dot {
     display: inline-block;
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     background: var(--gold);
     border-radius: 50%;
     margin-left: 6px;
@@ -105,15 +102,14 @@
   /* ── Nav ── */
   .nav {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: var(--nav-h);
+    bottom: 0; left: 0; right: 0;
+    height: calc(var(--nav-h) + env(safe-area-inset-bottom));
     background: rgba(9,9,12,0.97);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--border);
     display: flex;
     z-index: 10;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .nav-btn {
     flex: 1;
@@ -130,6 +126,8 @@
     justify-content: center;
     gap: 4px;
     transition: color 0.15s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
   .nav-btn.active { color: var(--gold); }
   .nav-btn svg { display: block; }
@@ -150,24 +148,18 @@
   .ring-bg { fill: none; stroke: var(--text-mute); stroke-width: 5; }
   .ring-fill { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
   .ring-text {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
   }
   .ring-score { font-size: 24px; font-weight: 700; color: var(--gold); line-height: 1; }
   .ring-total { font-size: 11px; color: var(--text-dim); }
 
   /* ── Goal cards ── */
   .goal-group-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin: 20px 0 8px;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin: 20px 0 8px;
   }
   .goal-card {
     display: flex;
@@ -176,49 +168,38 @@
     background: var(--surface);
     border: 1px solid transparent;
     border-radius: 12px;
-    padding: 14px 16px;
+    padding: 16px;
     margin-bottom: 8px;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
   .goal-card:active { transform: scale(0.98); }
-  .goal-card.checked {
-    background: var(--green-faint);
-    border-color: rgba(92,184,122,0.25);
-  }
-  .goal-icon { font-size: 22px; width: 28px; text-align: center; }
-  .goal-text { flex: 1; }
-  .goal-label { font-size: 15px; font-weight: 500; color: var(--text); }
-  .goal-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .goal-card.checked { background: var(--green-faint); border-color: rgba(92,184,122,0.25); }
+  .goal-icon { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
+  .goal-text { flex: 1; min-width: 0; }
+  .goal-label { font-size: 15px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 5px; }
+  .goal-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
   .goal-check {
-    width: 26px;
-    height: 26px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     border: 2px solid var(--text-mute);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: background 0.15s, border-color 0.15s;
     flex-shrink: 0;
   }
-  .goal-card.checked .goal-check {
-    background: var(--green);
-    border-color: var(--green);
-  }
+  .goal-card.checked .goal-check { background: var(--green); border-color: var(--green); }
   .goal-check svg { display: none; }
   .goal-card.checked .goal-check svg { display: block; }
 
   /* ── Weight & Note ── */
   .field-group { margin-top: 20px; }
   .field-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 8px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 8px;
   }
   .field-input {
     width: 100%;
@@ -226,68 +207,51 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     color: var(--text);
-    font-size: 15px;
-    padding: 12px 14px;
+    font-size: 16px;
+    padding: 14px;
     outline: none;
     transition: border-color 0.15s;
     font-family: inherit;
+    -webkit-appearance: none;
   }
   .field-input:focus { border-color: var(--gold-dim); }
-  .weight-input { width: 120px; }
+  .weight-input { width: 140px; }
   textarea.field-input { resize: none; height: 80px; }
 
   /* ── Week view ── */
   .week-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 16px;
   }
   .week-nav button {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
+    background: none; border: none;
+    color: var(--text-dim); font-size: 20px;
+    cursor: pointer; padding: 8px 14px;
+    border-radius: 8px; min-width: 44px; min-height: 44px;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .week-nav button:hover { color: var(--gold); }
   .week-label { font-size: 14px; color: var(--text); font-weight: 500; }
 
-  .week-grid { overflow-x: auto; }
+  .week-grid { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .week-table { width: 100%; border-collapse: collapse; }
   .week-table th {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    padding: 4px 0 8px;
-    text-align: center;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-dim); padding: 4px 0 8px; text-align: center;
   }
   .week-table th.goal-th { text-align: left; padding-left: 4px; max-width: 100px; }
   .week-table td { padding: 3px 2px; text-align: center; vertical-align: middle; }
   .week-table td.goal-name-td {
-    text-align: left;
-    font-size: 11px;
-    color: var(--text-dim);
-    padding-left: 4px;
-    white-space: nowrap;
-    max-width: 100px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    text-align: left; font-size: 11px; color: var(--text-dim);
+    padding-left: 4px; white-space: nowrap;
+    max-width: 100px; overflow: hidden; text-overflow: ellipsis;
   }
   .heat-cell {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    cursor: pointer;
-    transition: transform 0.1s;
+    width: 32px; height: 32px; border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; cursor: pointer; transition: transform 0.1s;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
   }
   .heat-cell:active { transform: scale(0.9); }
   .heat-on { background: var(--green); color: #fff; }
@@ -296,51 +260,34 @@
 
   .week-scores {
     margin-top: 16px;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
   }
   .day-score-col { text-align: center; }
   .day-score-bar-wrap {
-    height: 60px;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    margin-bottom: 4px;
+    height: 60px; display: flex;
+    align-items: flex-end; justify-content: center; margin-bottom: 4px;
   }
   .day-score-bar {
-    width: 20px;
-    border-radius: 4px 4px 0 0;
-    background: var(--gold-dim);
-    transition: height 0.3s ease;
-    min-height: 2px;
+    width: 20px; border-radius: 4px 4px 0 0;
+    background: var(--gold-dim); transition: height 0.3s ease; min-height: 2px;
   }
   .day-score-bar.perfect { background: var(--gold); }
   .day-score-num { font-size: 10px; color: var(--text-dim); }
   .day-score-day { font-size: 9px; color: var(--text-mute); letter-spacing: 0.04em; text-transform: uppercase; }
 
-  /* ── Summary tab ── */
+  /* ── Summary ── */
   .summary-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
   }
   .summary-card-title {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 12px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 12px;
   }
   .summary-stat-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 6px 0;
-    border-bottom: 1px solid var(--text-mute);
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 6px 0; border-bottom: 1px solid var(--text-mute);
   }
   .summary-stat-row:last-child { border-bottom: none; }
   .summary-stat-label { font-size: 13px; color: var(--text-dim); }
@@ -348,11 +295,8 @@
   .summary-stat-val.gold { color: var(--gold); }
 
   .streak-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--text-mute);
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--text-mute);
   }
   .streak-row:last-child { border-bottom: none; }
   .streak-icon { font-size: 16px; width: 22px; }
@@ -361,31 +305,112 @@
 
   .progress-bar-wrap { margin-top: 8px; }
   .progress-bar-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 4px;
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-dim); margin-bottom: 4px;
   }
-  .progress-bar-bg {
-    height: 6px;
-    background: var(--text-mute);
-    border-radius: 3px;
-    overflow: hidden;
+  .progress-bar-bg { height: 6px; background: var(--text-mute); border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s ease; }
+
+  /* ── Weight chart ── */
+  .weight-chart-svg { width: 100%; height: 100px; display: block; margin-bottom: 6px; }
+  .chart-empty { text-align: center; color: var(--text-mute); font-size: 12px; padding: 20px 0; }
+
+  /* ── Sync dot ── */
+  .sync-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-mute); flex-shrink: 0;
+    cursor: pointer; transition: background 0.3s;
   }
-  .progress-bar-fill {
-    height: 100%;
-    background: var(--gold);
-    border-radius: 3px;
-    transition: width 0.4s ease;
+  .sync-dot.ok { background: var(--green); }
+  .sync-dot.syncing { background: var(--gold); animation: blink 1s ease-in-out infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* ── Celebration overlay ── */
+  #celebration {
+    position: fixed; inset: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 0;
   }
+  #celebration.show {
+    animation: celebIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards,
+               celebOut 0.4s ease 2.2s forwards;
+  }
+  .celebration-box {
+    background: rgba(9,9,12,0.96);
+    border: 1px solid var(--gold);
+    border-radius: 22px;
+    padding: 30px 50px;
+    text-align: center;
+    box-shadow: 0 0 80px rgba(200,169,110,0.2);
+  }
+  .celebration-emoji { font-size: 48px; display: block; margin-bottom: 10px; line-height: 1; }
+  .celebration-text { font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; }
+  .celebration-sub { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+  @keyframes celebIn  { from { opacity:0; transform: scale(0.7); } to { opacity:1; transform: scale(1); } }
+  @keyframes celebOut { from { opacity:1; transform: scale(1); } to { opacity:0; transform: scale(0.9); } }
+
+  /* ── Setup modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(9,9,12,0.88);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .modal {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px;
+    max-width: 360px; width: 100%;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+  .modal-body { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
+  .modal-input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); font-size: 15px;
+    padding: 12px 14px; outline: none; font-family: inherit; margin-bottom: 4px;
+  }
+  .modal-input:focus { border-color: var(--gold-dim); }
+  .modal-btn {
+    width: 100%; padding: 14px;
+    background: var(--gold); color: var(--bg);
+    border: none; border-radius: 10px;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; margin-top: 8px;
+    touch-action: manipulation;
+  }
+  .modal-btn.secondary { background: none; border: 1px solid var(--border); color: var(--text-dim); }
 </style>
 </head>
 <body>
 
+<!-- Celebration overlay -->
+<div id="celebration">
+  <div class="celebration-box">
+    <span class="celebration-emoji">🎉</span>
+    <div class="celebration-text">Perfect Day!</div>
+    <div class="celebration-sub">All 7 goals crushed.</div>
+  </div>
+</div>
+
+<!-- Sync setup modal -->
+<div id="setup-modal" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-title">Enable Cross-Device Sync</div>
+    <div class="modal-body">Enter your sync token to keep habits in sync across your iPhone and Mac. You'll set <code style="color:var(--gold)">SYNC_TOKEN</code> in your Vercel dashboard.</div>
+    <input class="modal-input" id="token-input" type="text" placeholder="Paste your sync token"
+      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <button class="modal-btn" onclick="saveSyncToken()">Connect</button>
+    <button class="modal-btn secondary" onclick="dismissSetup()">Skip for now</button>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-top">
-    <div class="app-title">Project 40 Hardly</div>
+    <div class="app-title">
+      Project 40 Hardly
+      <span id="sync-dot" class="sync-dot" onclick="openSetupModal()"></span>
+    </div>
     <div class="countdown-badge">
       <div class="countdown-days" id="countdown-days">—</div>
       <div class="countdown-label">days to 40</div>
@@ -405,8 +430,7 @@
       <svg viewBox="0 0 96 96" width="96" height="96">
         <circle class="ring-bg" cx="48" cy="48" r="42"/>
         <circle class="ring-fill" id="ring-fill" cx="48" cy="48" r="42"
-          stroke-dasharray="263.9"
-          stroke-dashoffset="263.9"/>
+          stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
       </svg>
       <div class="ring-text">
         <div class="ring-score" id="ring-score">0</div>
@@ -423,7 +447,8 @@
 
   <div class="field-group">
     <div class="field-label">Weight (lbs)</div>
-    <input class="field-input weight-input" type="number" id="weight-input" placeholder="—" step="0.1"
+    <input class="field-input weight-input" type="number" inputmode="decimal"
+      id="weight-input" placeholder="—" step="0.1"
       onchange="saveField('weight', this.value ? parseFloat(this.value) : null)">
   </div>
 
@@ -477,48 +502,130 @@
 <script>
 const STORAGE_KEY = "project40hardly_v1";
 const GOALS = [
-  { id: "walk",       label: "Morning Walk",        sub: "10–30 min",          icon: "🚶", group: "morning" },
-  { id: "stretch",    label: "Morning Stretch",      sub: "2–3 min",            icon: "🧘", group: "morning" },
-  { id: "pushups",    label: "Pushups",              sub: "after peeing",       icon: "💪", group: "morning" },
-  { id: "outside",    label: "Outside Exercise",     sub: "30 min minimum",     icon: "🏃", group: "challenge" },
-  { id: "additional", label: "Additional Exercise",  sub: "strength/core/yoga", icon: "🏋️", group: "challenge" },
-  { id: "reading",    label: "Read Non-Fiction",     sub: "10+ pages",          icon: "📖", group: "challenge" },
-  { id: "nutrition",  label: "Nutrition",            sub: "on plan",            icon: "🥗", group: "challenge" },
+  { id: "walk",       label: "Morning Walk",       sub: "10–30 min",          icon: "🚶", group: "morning"   },
+  { id: "stretch",    label: "Morning Stretch",     sub: "2–3 min",            icon: "🧘", group: "morning"   },
+  { id: "pushups",    label: "Pushups",             sub: "after peeing",       icon: "💪", group: "morning"   },
+  { id: "outside",    label: "Outside Exercise",    sub: "30 min minimum",     icon: "🏃", group: "challenge" },
+  { id: "additional", label: "Additional Exercise", sub: "strength/core/yoga", icon: "🏋️", group: "challenge" },
+  { id: "reading",    label: "Read Non-Fiction",    sub: "10+ pages",          icon: "📖", group: "challenge" },
+  { id: "nutrition",  label: "Nutrition",           sub: "on plan",            icon: "🥗", group: "challenge" },
 ];
 
 const BIRTHDAY = new Date(2026, 8, 28);
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 let data = {};
 let currentDate = new Date();
-let weekOffset = 0;
-let activeTab = "today";
+let weekOffset  = 0;
+let activeTab   = "today";
 
 function toKey(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 function todayKey() { return toKey(new Date()); }
 function isToday(d) { return toKey(d) === todayKey(); }
-
-function load() {
-  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { data = {}; }
-}
-function save() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
 function getDay(key) { return data[key] || {}; }
-function setDay(key, obj) { data[key] = obj; save(); }
 function getScore(key) { return GOALS.filter(g => data[key]?.[g.id]).length; }
 
-// Countdown
+// ── Streaks ──
+function currentStreak(goalId) {
+  let streak = 0;
+  const d = new Date();
+  for (let i = 0; i < 400; i++) {
+    if (data[toKey(d)]?.[goalId]) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+// ── Sync ──
+function getSyncToken() { return localStorage.getItem("p40_sync_token") || ""; }
+function setSyncToken(t) { localStorage.setItem("p40_sync_token", t.trim()); }
+
+function setSyncStatus(s) {
+  const dot = document.getElementById("sync-dot");
+  if (!dot) return;
+  dot.className = "sync-dot" + (s ? " " + s : "");
+  const labels = {
+    "":        "Sync not set up — tap to configure",
+    ok:        "Synced ✓ — tap to reconfigure",
+    syncing:   "Syncing…",
+    error:     "Sync error — tap to check token"
+  };
+  dot.title = labels[s] ?? "";
+}
+
+let syncSaveTimer = null;
+
+async function syncLoad() {
+  const token = getSyncToken();
+  if (!token) return;
+  setSyncStatus("syncing");
+  try {
+    const res = await fetch("/api/sync", { headers: { "x-sync-token": token } });
+    if (res.status === 401) { setSyncStatus("error"); return; }
+    if (!res.ok) throw new Error("fetch failed");
+    const remote = await res.json();
+    const hadLocalOnly = Object.keys(data).some(k => !remote[k]);
+    data = { ...data, ...remote };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    if (hadLocalOnly) await pushToServer();
+    else setSyncStatus("ok");
+  } catch { setSyncStatus("error"); }
+}
+
+async function pushToServer() {
+  const token = getSyncToken();
+  if (!token) return;
+  setSyncStatus("syncing");
+  try {
+    const res = await fetch("/api/sync", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-sync-token": token },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error("push failed");
+    setSyncStatus("ok");
+  } catch { setSyncStatus("error"); }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  clearTimeout(syncSaveTimer);
+  syncSaveTimer = setTimeout(pushToServer, 600);
+}
+
+function load() {
+  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; }
+  catch { data = {}; }
+}
+
+// ── Setup modal ──
+function openSetupModal() {
+  document.getElementById("token-input").value = getSyncToken();
+  document.getElementById("setup-modal").style.display = "flex";
+  setTimeout(() => document.getElementById("token-input").focus(), 100);
+}
+function dismissSetup() {
+  document.getElementById("setup-modal").style.display = "none";
+  localStorage.setItem("p40_setup_dismissed", "1");
+}
+function saveSyncToken() {
+  const val = document.getElementById("token-input").value.trim();
+  if (!val) return;
+  setSyncToken(val);
+  document.getElementById("setup-modal").style.display = "none";
+  syncLoad().then(() => renderToday());
+}
+
+// ── Countdown ──
 function updateCountdown() {
-  const now = new Date();
-  const diff = Math.ceil((BIRTHDAY - now) / 86400000);
+  const diff = Math.ceil((BIRTHDAY - new Date()) / 86400000);
   document.getElementById("countdown-days").textContent = diff > 0 ? diff : "🎉";
 }
 
-// Date nav
+// ── Date nav ──
 function shiftDay(delta) {
   const d = new Date(currentDate);
   d.setDate(d.getDate() + delta);
@@ -528,7 +635,6 @@ function shiftDay(delta) {
 }
 
 function renderDateDisplay() {
-  const key = toKey(currentDate);
   const isTod = isToday(currentDate);
   const label = isTod
     ? `Today, ${MONTHS[currentDate.getMonth()]} ${currentDate.getDate()}`
@@ -538,7 +644,16 @@ function renderDateDisplay() {
   document.getElementById("next-day").disabled = isTod;
 }
 
-// Goal rendering
+// ── Celebration ──
+function showCelebration() {
+  const el = document.getElementById("celebration");
+  el.classList.remove("show");
+  void el.offsetWidth;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2800);
+}
+
+// ── Goal rendering ──
 function renderGoals() {
   const key = toKey(currentDate);
   const day = getDay(key);
@@ -547,12 +662,16 @@ function renderGoals() {
     el.innerHTML = "";
     GOALS.filter(g => g.group === group).forEach(goal => {
       const checked = !!day[goal.id];
+      const streak  = currentStreak(goal.id);
+      const fire    = streak >= 3
+        ? `<span style="font-size:13px;line-height:1" title="${streak}-day streak">🔥</span>`
+        : "";
       const card = document.createElement("div");
       card.className = "goal-card" + (checked ? " checked" : "");
       card.innerHTML = `
         <div class="goal-icon">${goal.icon}</div>
         <div class="goal-text">
-          <div class="goal-label">${goal.label}</div>
+          <div class="goal-label">${goal.label}${fire}</div>
           <div class="goal-sub">${goal.sub}</div>
         </div>
         <div class="goal-check">
@@ -567,9 +686,13 @@ function renderGoals() {
 }
 
 function toggleGoal(key, goalId) {
+  const prevScore = getScore(key);
   if (!data[key]) data[key] = {};
   data[key][goalId] = !data[key][goalId];
   save();
+  if (getScore(key) === GOALS.length && prevScore < GOALS.length && isToday(currentDate)) {
+    showCelebration();
+  }
   renderToday();
 }
 
@@ -580,24 +703,18 @@ function saveField(field, val) {
   save();
 }
 
-// Ring
+// ── Ring ──
 function updateRing() {
-  const key = toKey(currentDate);
-  const score = getScore(key);
-  const pct = score / GOALS.length;
-  const circ = 263.9;
-  document.getElementById("ring-fill").style.strokeDashoffset = circ - circ * pct;
+  const score = getScore(toKey(currentDate));
+  const circ  = 263.9;
+  document.getElementById("ring-fill").style.strokeDashoffset = circ - circ * (score / GOALS.length);
   document.getElementById("ring-score").textContent = score;
 }
 
-// Today inputs
 function updateInputs() {
-  const key = toKey(currentDate);
-  const day = getDay(key);
-  const wi = document.getElementById("weight-input");
-  const ni = document.getElementById("note-input");
-  wi.value = day.weight != null ? day.weight : "";
-  ni.value = day.note || "";
+  const day = getDay(toKey(currentDate));
+  document.getElementById("weight-input").value = day.weight != null ? day.weight : "";
+  document.getElementById("note-input").value   = day.note || "";
 }
 
 function renderToday() {
@@ -607,10 +724,10 @@ function renderToday() {
   updateInputs();
 }
 
-// Week view
+// ── Week view ──
 function getWeekStart(offset) {
   const d = new Date();
-  d.setDate(d.getDate() - d.getDay() + 1 + offset * 7); // Monday
+  d.setDate(d.getDate() - d.getDay() + 1 + offset * 7);
   d.setHours(0,0,0,0);
   return d;
 }
@@ -621,26 +738,21 @@ function renderWeek() {
   const fmt = d => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
   document.getElementById("week-label").textContent = `${fmt(ws)} – ${fmt(we)}`;
 
-  const days = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(ws); d.setDate(d.getDate() + i);
-    days.push(d);
-  }
+  const days = Array.from({length:7}, (_, i) => {
+    const d = new Date(ws); d.setDate(d.getDate() + i); return d;
+  });
 
-  // Table header
   let html = "<thead><tr><th class='goal-th'>Goal</th>";
   days.forEach(d => {
     html += `<th>${DAYS[d.getDay()]}<br><span style="font-size:9px;color:var(--text-mute)">${d.getDate()}</span></th>`;
   });
   html += "</tr></thead><tbody>";
-
   GOALS.forEach(goal => {
     html += `<tr><td class='goal-name-td'>${goal.icon} ${goal.label}</td>`;
     days.forEach(d => {
-      const key = toKey(d);
+      const key  = toKey(d);
       const done = !!data[key]?.[goal.id];
-      const isTod = isToday(d);
-      const cls = "heat-cell " + (done ? "heat-on" : "heat-off") + (isTod ? " heat-today" : "");
+      const cls  = "heat-cell " + (done ? "heat-on" : "heat-off") + (isToday(d) ? " heat-today" : "");
       html += `<td><div class="${cls}" onclick="jumpToDay('${key}')">${done ? "✓" : ""}</div></td>`;
     });
     html += "</tr>";
@@ -648,15 +760,10 @@ function renderWeek() {
   html += "</tbody>";
   document.getElementById("week-table").innerHTML = html;
 
-  // Score bars
-  const maxGoals = GOALS.length;
-  const scoresEl = document.getElementById("week-scores");
-  scoresEl.innerHTML = days.map(d => {
-    const key = toKey(d);
-    const score = getScore(key);
-    const pct = score / maxGoals;
-    const barH = Math.max(2, Math.round(pct * 60));
-    const perfect = score === maxGoals;
+  document.getElementById("week-scores").innerHTML = days.map(d => {
+    const score   = getScore(toKey(d));
+    const barH    = Math.max(2, Math.round((score / GOALS.length) * 60));
+    const perfect = score === GOALS.length;
     return `<div class="day-score-col">
       <div class="day-score-bar-wrap">
         <div class="day-score-bar${perfect ? " perfect" : ""}" style="height:${barH}px"></div>
@@ -679,9 +786,64 @@ function jumpToDay(key) {
   switchTab("today");
 }
 
-// Summary
+// ── Weight chart ──
+function renderWeightChart(allKeys) {
+  const pts = allKeys
+    .filter(k => data[k]?.weight != null)
+    .map(k => ({ key: k, w: data[k].weight }))
+    .slice(-60);
+
+  if (pts.length < 2) {
+    return `<div class="chart-empty">Log weight on a few days to see your trend</div>`;
+  }
+
+  const ws    = pts.map(p => p.w);
+  const minW  = Math.min(...ws);
+  const maxW  = Math.max(...ws);
+  const range = maxW - minW || 0.5;
+  const n     = pts.length;
+
+  const VW = 300, VH = 100, PX = 6, PY = 8;
+  const coords = pts.map((p, i) => ({
+    x: PX + (i / (n-1)) * (VW - PX*2),
+    y: PY + (VH - PY*2) - ((p.w - minW) / range) * (VH - PY*2),
+    w: p.w
+  }));
+
+  const line = coords.map((c,i) => `${i===0?"M":"L"}${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
+  const area = `${line} L${coords[n-1].x.toFixed(1)},${VH-PY} L${coords[0].x.toFixed(1)},${VH-PY} Z`;
+
+  const latest   = ws[n-1];
+  const rawDiff  = (latest - ws[0]).toFixed(1);
+  const diffStr  = rawDiff > 0 ? `+${rawDiff}` : `${rawDiff}`;
+  const diffColor= rawDiff < 0 ? "var(--green)" : rawDiff > 0 ? "var(--red)" : "var(--text-dim)";
+  const fmtDate  = k => k.slice(5).replace("-", "/");
+
+  return `
+    <svg class="weight-chart-svg" viewBox="0 0 ${VW} ${VH}" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="var(--gold)" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="${area}" fill="url(#wg)"/>
+      <path d="${line}" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="${coords[0].x.toFixed(1)}" cy="${coords[0].y.toFixed(1)}" r="3" fill="var(--gold)" opacity="0.5"/>
+      <circle cx="${coords[n-1].x.toFixed(1)}" cy="${coords[n-1].y.toFixed(1)}" r="3.5" fill="var(--gold)"/>
+    </svg>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:11px;color:var(--text-mute)">
+      <span>${fmtDate(pts[0].key)}</span>
+      <span style="color:var(--text-dim)">
+        <strong style="color:var(--text)">${latest} lbs</strong>
+        ${rawDiff !== "0.0" ? `<span style="color:${diffColor};margin-left:5px">${diffStr}</span>` : ""}
+      </span>
+      <span>${fmtDate(pts[n-1].key)}</span>
+    </div>`;
+}
+
+// ── Summary ──
 function renderSummary() {
-  const today = new Date();
   const allKeys = Object.keys(data).sort();
   if (!allKeys.length) {
     document.getElementById("summary-content").innerHTML =
@@ -689,33 +851,18 @@ function renderSummary() {
     return;
   }
 
-  // Overall stats
-  const totalDays = allKeys.length;
-  const totalChecks = allKeys.reduce((s, k) => s + getScore(k), 0);
-  const totalPossible = totalDays * GOALS.length;
-  const perfectDays = allKeys.filter(k => getScore(k) === GOALS.length).length;
-  const overallPct = totalPossible ? Math.round(100 * totalChecks / totalPossible) : 0;
+  const today        = new Date();
+  const totalDays    = allKeys.length;
+  const totalChecks  = allKeys.reduce((s,k) => s + getScore(k), 0);
+  const perfectDays  = allKeys.filter(k => getScore(k) === GOALS.length).length;
+  const overallPct   = Math.round(100 * totalChecks / (totalDays * GOALS.length));
 
-  // Current streaks per goal
-  function currentStreak(goalId) {
-    let streak = 0;
-    const d = new Date();
-    for (let i = 0; i < 400; i++) {
-      const k = toKey(d);
-      if (data[k]?.[goalId]) { streak++; d.setDate(d.getDate() - 1); }
-      else break;
-    }
-    return streak;
-  }
-
-  // Journey progress
   const journeyStart = new Date(2026, 2, 10);
-  const daysSinceStart = Math.max(0, Math.floor((today - journeyStart) / 86400000));
-  const daysToGo = Math.max(0, Math.ceil((BIRTHDAY - today) / 86400000));
+  const daysToGo     = Math.max(0, Math.ceil((BIRTHDAY - today) / 86400000));
   const totalJourney = Math.ceil((BIRTHDAY - journeyStart) / 86400000);
-  const journeyPct = Math.min(100, Math.round(100 * daysSinceStart / totalJourney));
+  const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - journeyStart) / 86400000)) / totalJourney));
 
-  let html = `
+  document.getElementById("summary-content").innerHTML = `
     <div class="summary-card">
       <div class="summary-card-title">Overall</div>
       <div class="summary-stat-row">
@@ -731,13 +878,8 @@ function renderSummary() {
         <span class="summary-stat-val gold">${overallPct}%</span>
       </div>
       <div class="progress-bar-wrap">
-        <div class="progress-bar-label">
-          <span>Journey to 40</span>
-          <span>${journeyPct}%</span>
-        </div>
-        <div class="progress-bar-bg">
-          <div class="progress-bar-fill" style="width:${journeyPct}%"></div>
-        </div>
+        <div class="progress-bar-label"><span>Journey to 40</span><span>${journeyPct}%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${journeyPct}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-mute);margin-top:4px">
           <span>Mar 10</span><span>${daysToGo} days left</span><span>Sep 28</span>
         </div>
@@ -745,13 +887,19 @@ function renderSummary() {
     </div>
 
     <div class="summary-card">
+      <div class="summary-card-title">Weight trend</div>
+      ${renderWeightChart(allKeys)}
+    </div>
+
+    <div class="summary-card">
       <div class="summary-card-title">Current streaks</div>
       ${GOALS.map(g => {
-        const s = currentStreak(g.id);
+        const s    = currentStreak(g.id);
+        const fire = s >= 3 ? " 🔥" : "";
         return `<div class="streak-row">
           <div class="streak-icon">${g.icon}</div>
           <div class="streak-name">${g.label}</div>
-          <div class="streak-val">${s} ${s === 1 ? "day" : "days"}</div>
+          <div class="streak-val">${s} ${s === 1 ? "day" : "days"}${fire}</div>
         </div>`;
       }).join("")}
     </div>
@@ -760,39 +908,41 @@ function renderSummary() {
       <div class="summary-card-title">Goal breakdown</div>
       ${GOALS.map(g => {
         const count = allKeys.filter(k => data[k]?.[g.id]).length;
-        const pct = totalDays ? Math.round(100 * count / totalDays) : 0;
+        const pct   = totalDays ? Math.round(100 * count / totalDays) : 0;
         return `<div class="progress-bar-wrap" style="margin-bottom:12px">
-          <div class="progress-bar-label">
-            <span>${g.icon} ${g.label}</span>
-            <span>${pct}%</span>
-          </div>
-          <div class="progress-bar-bg">
-            <div class="progress-bar-fill" style="width:${pct}%"></div>
-          </div>
+          <div class="progress-bar-label"><span>${g.icon} ${g.label}</span><span>${pct}%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
         </div>`;
       }).join("")}
-    </div>
-  `;
-
-  document.getElementById("summary-content").innerHTML = html;
+    </div>`;
 }
 
-// Tab switching
+// ── Tab switching ──
 function switchTab(tab) {
   activeTab = tab;
   ["today","week","summary"].forEach(t => {
     document.getElementById(`sec-${t}`).classList.toggle("active", t === tab);
     document.getElementById(`nav-${t}`).classList.toggle("active", t === tab);
   });
-  if (tab === "week") renderWeek();
+  if (tab === "week")    renderWeek();
   if (tab === "summary") renderSummary();
 }
 
-// Init
+// ── Init ──
 load();
 updateCountdown();
 renderToday();
 setInterval(updateCountdown, 60000);
+
+if (getSyncToken()) {
+  setSyncStatus("syncing");
+  syncLoad().then(() => renderToday());
+} else {
+  setSyncStatus("");
+  if (!localStorage.getItem("p40_setup_dismissed")) {
+    setTimeout(() => { document.getElementById("setup-modal").style.display = "flex"; }, 800);
+  }
+}
 </script>
 </body>
 </html>
