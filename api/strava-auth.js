@@ -33,6 +33,6 @@ export default async function handler(req, res) {
         : null,
     });
   } catch (e) {
-    return res.status(500).json({ error: 'Token exchange failed' });
+    return res.status(500).json({ error: 'Token exchange failed', detail: e.message });
   }
 }

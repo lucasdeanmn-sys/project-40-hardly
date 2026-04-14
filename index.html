@@ -1304,7 +1304,11 @@ function stravaConnect() {
 
 async function stravaExchangeCode(code) {
   const res = await fetch(`/api/strava-auth?code=${encodeURIComponent(code)}`);
-  if (!res.ok) throw new Error("Token exchange failed");
+  if (!res.ok) {
+    let msg = `HTTP ${res.status}`;
+    try { const e = await res.json(); msg = e.message || e.error || JSON.stringify(e); } catch {}
+    throw new Error(msg);
+  }
   const d = await res.json();
   localStorage.setItem("strava_access_token", d.access_token);
   localStorage.setItem("strava_refresh_token", d.refresh_token);
