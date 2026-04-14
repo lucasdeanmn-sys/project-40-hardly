@@ -1386,11 +1386,13 @@ function renderStravaSection() {
   if (!el) return;
 
   if (!stravaIsConnected()) {
+    const authErr = stravaState.startsWith?.("auth_error:") ? stravaState.slice(11) : null;
     el.innerHTML = `
       <button class="strava-connect-btn" onclick="stravaConnect()">
         <span style="font-weight:800;letter-spacing:0.08em;font-size:12px">STRAVA</span>
         Connect to auto-check exercise goals
-      </button>`;
+      </button>
+      ${authErr ? `<div style="font-size:11px;color:var(--red);text-align:center;margin-top:4px;padding:0 4px">Connection failed: ${authErr}. Check STRAVA_CLIENT_SECRET in Vercel.</div>` : ""}`;
     return;
   }
 
@@ -1452,7 +1454,10 @@ updateCountdown();
   const code = p.get("code");
   const err  = p.get("error");
   if (code || err) window.history.replaceState({}, "", window.location.pathname);
-  if (code) stravaExchangeCode(code).catch(() => {}).then(() => renderToday());
+  if (err) { stravaState = "auth_error:" + err; renderToday(); }
+  if (code) stravaExchangeCode(code)
+    .then(() => renderToday())
+    .catch(e => { stravaState = "auth_error:" + (e.message || "unknown"); renderToday(); });
 })();
 
 renderToday();
