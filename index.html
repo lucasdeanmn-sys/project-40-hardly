@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project 40 Hardly</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #09090c;
+    --surface: rgba(255,255,255,0.04);
+    --surface2: rgba(255,255,255,0.07);
+    --border: rgba(200,169,110,0.15);
+    --gold: #c8a96e;
+    --gold-dim: rgba(200,169,110,0.4);
+    --gold-faint: rgba(200,169,110,0.08);
+    --text: #ede8de;
+    --text-dim: #8a7d68;
+    --text-mute: #3d3528;
+    --green: #5cb87a;
+    --green-faint: rgba(92,184,122,0.12);
+    --red: #c06060;
+    --nav-h: 64px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    padding-bottom: var(--nav-h);
+  }
+
+  /* ── Header ── */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(9,9,12,0.96);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px 10px;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .app-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .countdown-badge {
+    text-align: right;
+  }
+  .countdown-days {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .countdown-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  .date-nav button {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: color 0.15s;
+  }
+  .date-nav button:hover { color: var(--gold); }
+  .date-nav button:disabled { opacity: 0.2; cursor: default; }
+  .date-display {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .date-today-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── Nav ── */
+  .nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-h);
+    background: rgba(9,9,12,0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 10;
+  }
+  .nav-btn {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: color 0.15s;
+  }
+  .nav-btn.active { color: var(--gold); }
+  .nav-btn svg { display: block; }
+
+  /* ── Sections ── */
+  .section { display: none; padding: 20px 16px; }
+  .section.active { display: block; }
+
+  /* ── Score ring ── */
+  .score-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0 16px;
+  }
+  .ring-container { position: relative; width: 96px; height: 96px; }
+  .ring-container svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--text-mute); stroke-width: 5; }
+  .ring-fill { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-score { font-size: 24px; font-weight: 700; color: var(--gold); line-height: 1; }
+  .ring-total { font-size: 11px; color: var(--text-dim); }
+
+  /* ── Goal cards ── */
+  .goal-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 20px 0 8px;
+  }
+  .goal-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .goal-card:active { transform: scale(0.98); }
+  .goal-card.checked {
+    background: var(--green-faint);
+    border-color: rgba(92,184,122,0.25);
+  }
+  .goal-icon { font-size: 22px; width: 28px; text-align: center; }
+  .goal-text { flex: 1; }
+  .goal-label { font-size: 15px; font-weight: 500; color: var(--text); }
+  .goal-sub { font-size: 12px; color: var(--text-dim); margin-top: 1px; }
+  .goal-check {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--text-mute);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .goal-card.checked .goal-check {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .goal-check svg { display: none; }
+  .goal-card.checked .goal-check svg { display: block; }
+
+  /* ── Weight & Note ── */
+  .field-group { margin-top: 20px; }
+  .field-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .field-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 15px;
+    padding: 12px 14px;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+  .field-input:focus { border-color: var(--gold-dim); }
+  .weight-input { width: 120px; }
+  textarea.field-input { resize: none; height: 80px; }
+
+  /* ── Week view ── */
+  .week-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .week-nav button {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+  }
+  .week-nav button:hover { color: var(--gold); }
+  .week-label { font-size: 14px; color: var(--text); font-weight: 500; }
+
+  .week-grid { overflow-x: auto; }
+  .week-table { width: 100%; border-collapse: collapse; }
+  .week-table th {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 4px 0 8px;
+    text-align: center;
+  }
+  .week-table th.goal-th { text-align: left; padding-left: 4px; max-width: 100px; }
+  .week-table td { padding: 3px 2px; text-align: center; vertical-align: middle; }
+  .week-table td.goal-name-td {
+    text-align: left;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding-left: 4px;
+    white-space: nowrap;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .heat-cell {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .heat-cell:active { transform: scale(0.9); }
+  .heat-on { background: var(--green); color: #fff; }
+  .heat-off { background: var(--surface2); color: var(--text-mute); }
+  .heat-today { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+  .week-scores {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .day-score-col { text-align: center; }
+  .day-score-bar-wrap {
+    height: 60px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  .day-score-bar {
+    width: 20px;
+    border-radius: 4px 4px 0 0;
+    background: var(--gold-dim);
+    transition: height 0.3s ease;
+    min-height: 2px;
+  }
+  .day-score-bar.perfect { background: var(--gold); }
+  .day-score-num { font-size: 10px; color: var(--text-dim); }
+  .day-score-day { font-size: 9px; color: var(--text-mute); letter-spacing: 0.04em; text-transform: uppercase; }
+
+  /* ── Summary tab ── */
+  .summary-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .summary-card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  .summary-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--text-mute);
+  }
+  .summary-stat-row:last-child { border-bottom: none; }
+  .summary-stat-label { font-size: 13px; color: var(--text-dim); }
+  .summary-stat-val { font-size: 15px; font-weight: 600; color: var(--text); }
+  .summary-stat-val.gold { color: var(--gold); }
+
+  .streak-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--text-mute);
+  }
+  .streak-row:last-child { border-bottom: none; }
+  .streak-icon { font-size: 16px; width: 22px; }
+  .streak-name { font-size: 13px; color: var(--text-dim); flex: 1; }
+  .streak-val { font-size: 14px; font-weight: 600; color: var(--gold); }
+
+  .progress-bar-wrap { margin-top: 8px; }
+  .progress-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+  .progress-bar-bg {
+    height: 6px;
+    background: var(--text-mute);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="app-title">Project 40 Hardly</div>
+    <div class="countdown-badge">
+      <div class="countdown-days" id="countdown-days">—</div>
+      <div class="countdown-label">days to 40</div>
+    </div>
+  </div>
+  <div class="date-nav">
+    <button id="prev-day" onclick="shiftDay(-1)">‹</button>
+    <div class="date-display" id="date-display"></div>
+    <button id="next-day" onclick="shiftDay(1)">›</button>
+  </div>
+</div>
+
+<!-- Today tab -->
+<div class="section active" id="sec-today">
+  <div class="score-wrap">
+    <div class="ring-container">
+      <svg viewBox="0 0 96 96" width="96" height="96">
+        <circle class="ring-bg" cx="48" cy="48" r="42"/>
+        <circle class="ring-fill" id="ring-fill" cx="48" cy="48" r="42"
+          stroke-dasharray="263.9"
+          stroke-dashoffset="263.9"/>
+      </svg>
+      <div class="ring-text">
+        <div class="ring-score" id="ring-score">0</div>
+        <div class="ring-total">/ 7</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="goal-group-label">Morning habits</div>
+  <div id="goals-morning"></div>
+
+  <div class="goal-group-label">Challenge goals</div>
+  <div id="goals-challenge"></div>
+
+  <div class="field-group">
+    <div class="field-label">Weight (lbs)</div>
+    <input class="field-input weight-input" type="number" id="weight-input" placeholder="—" step="0.1"
+      onchange="saveField('weight', this.value ? parseFloat(this.value) : null)">
+  </div>
+
+  <div class="field-group">
+    <div class="field-label">Daily note</div>
+    <textarea class="field-input" id="note-input" placeholder="How'd it go?"
+      oninput="saveField('note', this.value)"></textarea>
+  </div>
+</div>
+
+<!-- Week tab -->
+<div class="section" id="sec-week">
+  <div class="week-nav">
+    <button onclick="shiftWeek(-1)">‹</button>
+    <div class="week-label" id="week-label"></div>
+    <button onclick="shiftWeek(1)">›</button>
+  </div>
+  <div class="week-grid">
+    <table class="week-table" id="week-table"></table>
+  </div>
+  <div class="week-scores" id="week-scores"></div>
+</div>
+
+<!-- Summary tab -->
+<div class="section" id="sec-summary">
+  <div id="summary-content"></div>
+</div>
+
+<!-- Bottom nav -->
+<nav class="nav">
+  <button class="nav-btn active" id="nav-today" onclick="switchTab('today')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+    Today
+  </button>
+  <button class="nav-btn" id="nav-week" onclick="switchTab('week')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    Week
+  </button>
+  <button class="nav-btn" id="nav-summary" onclick="switchTab('summary')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+    </svg>
+    Summary
+  </button>
+</nav>
+
+<script>
+const STORAGE_KEY = "project40hardly_v1";
+const GOALS = [
+  { id: "walk",       label: "Morning Walk",        sub: "10–30 min",          icon: "🚶", group: "morning" },
+  { id: "stretch",    label: "Morning Stretch",      sub: "2–3 min",            icon: "🧘", group: "morning" },
+  { id: "pushups",    label: "Pushups",              sub: "after peeing",       icon: "💪", group: "morning" },
+  { id: "outside",    label: "Outside Exercise",     sub: "30 min minimum",     icon: "🏃", group: "challenge" },
+  { id: "additional", label: "Additional Exercise",  sub: "strength/core/yoga", icon: "🏋️", group: "challenge" },
+  { id: "reading",    label: "Read Non-Fiction",     sub: "10+ pages",          icon: "📖", group: "challenge" },
+  { id: "nutrition",  label: "Nutrition",            sub: "on plan",            icon: "🥗", group: "challenge" },
+];
+
+const BIRTHDAY = new Date(2026, 8, 28);
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+let data = {};
+let currentDate = new Date();
+let weekOffset = 0;
+let activeTab = "today";
+
+function toKey(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function todayKey() { return toKey(new Date()); }
+function isToday(d) { return toKey(d) === todayKey(); }
+
+function load() {
+  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { data = {}; }
+}
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function getDay(key) { return data[key] || {}; }
+function setDay(key, obj) { data[key] = obj; save(); }
+function getScore(key) { return GOALS.filter(g => data[key]?.[g.id]).length; }
+
+// Countdown
+function updateCountdown() {
+  const now = new Date();
+  const diff = Math.ceil((BIRTHDAY - now) / 86400000);
+  document.getElementById("countdown-days").textContent = diff > 0 ? diff : "🎉";
+}
+
+// Date nav
+function shiftDay(delta) {
+  const d = new Date(currentDate);
+  d.setDate(d.getDate() + delta);
+  if (d > new Date()) return;
+  currentDate = d;
+  renderToday();
+}
+
+function renderDateDisplay() {
+  const key = toKey(currentDate);
+  const isTod = isToday(currentDate);
+  const label = isTod
+    ? `Today, ${MONTHS[currentDate.getMonth()]} ${currentDate.getDate()}`
+    : `${DAYS[currentDate.getDay()]}, ${MONTHS[currentDate.getMonth()]} ${currentDate.getDate()}`;
+  document.getElementById("date-display").innerHTML =
+    label + (isTod ? '<span class="date-today-dot"></span>' : "");
+  document.getElementById("next-day").disabled = isTod;
+}
+
+// Goal rendering
+function renderGoals() {
+  const key = toKey(currentDate);
+  const day = getDay(key);
+  ["morning","challenge"].forEach(group => {
+    const el = document.getElementById(`goals-${group}`);
+    el.innerHTML = "";
+    GOALS.filter(g => g.group === group).forEach(goal => {
+      const checked = !!day[goal.id];
+      const card = document.createElement("div");
+      card.className = "goal-card" + (checked ? " checked" : "");
+      card.innerHTML = `
+        <div class="goal-icon">${goal.icon}</div>
+        <div class="goal-text">
+          <div class="goal-label">${goal.label}</div>
+          <div class="goal-sub">${goal.sub}</div>
+        </div>
+        <div class="goal-check">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,7 6,11 12,3"/>
+          </svg>
+        </div>`;
+      card.onclick = () => toggleGoal(key, goal.id);
+      el.appendChild(card);
+    });
+  });
+}
+
+function toggleGoal(key, goalId) {
+  if (!data[key]) data[key] = {};
+  data[key][goalId] = !data[key][goalId];
+  save();
+  renderToday();
+}
+
+function saveField(field, val) {
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  data[key][field] = val;
+  save();
+}
+
+// Ring
+function updateRing() {
+  const key = toKey(currentDate);
+  const score = getScore(key);
+  const pct = score / GOALS.length;
+  const circ = 263.9;
+  document.getElementById("ring-fill").style.strokeDashoffset = circ - circ * pct;
+  document.getElementById("ring-score").textContent = score;
+}
+
+// Today inputs
+function updateInputs() {
+  const key = toKey(currentDate);
+  const day = getDay(key);
+  const wi = document.getElementById("weight-input");
+  const ni = document.getElementById("note-input");
+  wi.value = day.weight != null ? day.weight : "";
+  ni.value = day.note || "";
+}
+
+function renderToday() {
+  renderDateDisplay();
+  renderGoals();
+  updateRing();
+  updateInputs();
+}
+
+// Week view
+function getWeekStart(offset) {
+  const d = new Date();
+  d.setDate(d.getDate() - d.getDay() + 1 + offset * 7); // Monday
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function renderWeek() {
+  const ws = getWeekStart(weekOffset);
+  const we = new Date(ws); we.setDate(we.getDate() + 6);
+  const fmt = d => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  document.getElementById("week-label").textContent = `${fmt(ws)} – ${fmt(we)}`;
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(ws); d.setDate(d.getDate() + i);
+    days.push(d);
+  }
+
+  // Table header
+  let html = "<thead><tr><th class='goal-th'>Goal</th>";
+  days.forEach(d => {
+    html += `<th>${DAYS[d.getDay()]}<br><span style="font-size:9px;color:var(--text-mute)">${d.getDate()}</span></th>`;
+  });
+  html += "</tr></thead><tbody>";
+
+  GOALS.forEach(goal => {
+    html += `<tr><td class='goal-name-td'>${goal.icon} ${goal.label}</td>`;
+    days.forEach(d => {
+      const key = toKey(d);
+      const done = !!data[key]?.[goal.id];
+      const isTod = isToday(d);
+      const cls = "heat-cell " + (done ? "heat-on" : "heat-off") + (isTod ? " heat-today" : "");
+      html += `<td><div class="${cls}" onclick="jumpToDay('${key}')">${done ? "✓" : ""}</div></td>`;
+    });
+    html += "</tr>";
+  });
+  html += "</tbody>";
+  document.getElementById("week-table").innerHTML = html;
+
+  // Score bars
+  const maxGoals = GOALS.length;
+  const scoresEl = document.getElementById("week-scores");
+  scoresEl.innerHTML = days.map(d => {
+    const key = toKey(d);
+    const score = getScore(key);
+    const pct = score / maxGoals;
+    const barH = Math.max(2, Math.round(pct * 60));
+    const perfect = score === maxGoals;
+    return `<div class="day-score-col">
+      <div class="day-score-bar-wrap">
+        <div class="day-score-bar${perfect ? " perfect" : ""}" style="height:${barH}px"></div>
+      </div>
+      <div class="day-score-num">${score}</div>
+      <div class="day-score-day">${DAYS[d.getDay()]}</div>
+    </div>`;
+  }).join("");
+}
+
+function shiftWeek(delta) {
+  if (weekOffset + delta > 0) return;
+  weekOffset += delta;
+  renderWeek();
+}
+
+function jumpToDay(key) {
+  const [y,m,d] = key.split("-").map(Number);
+  currentDate = new Date(y, m-1, d);
+  switchTab("today");
+}
+
+// Summary
+function renderSummary() {
+  const today = new Date();
+  const allKeys = Object.keys(data).sort();
+  if (!allKeys.length) {
+    document.getElementById("summary-content").innerHTML =
+      `<div style="text-align:center;color:var(--text-dim);padding:60px 20px">No data yet. Start checking off goals!</div>`;
+    return;
+  }
+
+  // Overall stats
+  const totalDays = allKeys.length;
+  const totalChecks = allKeys.reduce((s, k) => s + getScore(k), 0);
+  const totalPossible = totalDays * GOALS.length;
+  const perfectDays = allKeys.filter(k => getScore(k) === GOALS.length).length;
+  const overallPct = totalPossible ? Math.round(100 * totalChecks / totalPossible) : 0;
+
+  // Current streaks per goal
+  function currentStreak(goalId) {
+    let streak = 0;
+    const d = new Date();
+    for (let i = 0; i < 400; i++) {
+      const k = toKey(d);
+      if (data[k]?.[goalId]) { streak++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return streak;
+  }
+
+  // Journey progress
+  const journeyStart = new Date(2026, 2, 10);
+  const daysSinceStart = Math.max(0, Math.floor((today - journeyStart) / 86400000));
+  const daysToGo = Math.max(0, Math.ceil((BIRTHDAY - today) / 86400000));
+  const totalJourney = Math.ceil((BIRTHDAY - journeyStart) / 86400000);
+  const journeyPct = Math.min(100, Math.round(100 * daysSinceStart / totalJourney));
+
+  let html = `
+    <div class="summary-card">
+      <div class="summary-card-title">Overall</div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Days tracked</span>
+        <span class="summary-stat-val">${totalDays}</span>
+      </div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Perfect days</span>
+        <span class="summary-stat-val gold">${perfectDays}</span>
+      </div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Goal completion</span>
+        <span class="summary-stat-val gold">${overallPct}%</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-label">
+          <span>Journey to 40</span>
+          <span>${journeyPct}%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" style="width:${journeyPct}%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-mute);margin-top:4px">
+          <span>Mar 10</span><span>${daysToGo} days left</span><span>Sep 28</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">Current streaks</div>
+      ${GOALS.map(g => {
+        const s = currentStreak(g.id);
+        return `<div class="streak-row">
+          <div class="streak-icon">${g.icon}</div>
+          <div class="streak-name">${g.label}</div>
+          <div class="streak-val">${s} ${s === 1 ? "day" : "days"}</div>
+        </div>`;
+      }).join("")}
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">Goal breakdown</div>
+      ${GOALS.map(g => {
+        const count = allKeys.filter(k => data[k]?.[g.id]).length;
+        const pct = totalDays ? Math.round(100 * count / totalDays) : 0;
+        return `<div class="progress-bar-wrap" style="margin-bottom:12px">
+          <div class="progress-bar-label">
+            <span>${g.icon} ${g.label}</span>
+            <span>${pct}%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width:${pct}%"></div>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+
+  document.getElementById("summary-content").innerHTML = html;
+}
+
+// Tab switching
+function switchTab(tab) {
+  activeTab = tab;
+  ["today","week","summary"].forEach(t => {
+    document.getElementById(`sec-${t}`).classList.toggle("active", t === tab);
+    document.getElementById(`nav-${t}`).classList.toggle("active", t === tab);
+  });
+  if (tab === "week") renderWeek();
+  if (tab === "summary") renderSummary();
+}
+
+// Init
+load();
+updateCountdown();
+renderToday();
+setInterval(updateCountdown, 60000);
+</script>
+</body>
+</html>
