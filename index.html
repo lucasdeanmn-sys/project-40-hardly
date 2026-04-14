@@ -792,6 +792,7 @@ function shiftDay(delta) {
   if (d > new Date()) return;
   currentDate = d;
   renderToday();
+  if (isToday(currentDate)) stravaAutoSync();
 }
 
 function renderDateDisplay() {
@@ -1429,6 +1430,13 @@ function renderStravaSection() {
     </div>`;
 }
 
+function stravaAutoSync() {
+  if (!stravaIsConnected() || !isToday(currentDate)) return;
+  const key      = toKey(currentDate);
+  const lastSync = data[key]?.strava_synced_at || 0;
+  if (Date.now() - lastSync > 15 * 60 * 1000) stravaSyncToday();
+}
+
 // ── Init ──
 load();
 updateCountdown();
@@ -1443,6 +1451,7 @@ updateCountdown();
 })();
 
 renderToday();
+stravaAutoSync();
 setInterval(updateCountdown, 60000);
 
 if (getSyncToken()) {
