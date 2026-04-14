@@ -1433,8 +1433,13 @@ function renderStravaSection() {
 function stravaAutoSync() {
   if (!stravaIsConnected() || !isToday(currentDate)) return;
   const key      = toKey(currentDate);
-  const lastSync = data[key]?.strava_synced_at || 0;
-  if (Date.now() - lastSync > 15 * 60 * 1000) stravaSyncToday();
+  const count    = data[key]?.strava_activity_count ?? null;
+  const lastSync = data[key]?.strava_synced_at     || 0;
+  // Already found activities today — nothing more to do
+  if (count > 0) return;
+  // No activities yet — retry every 30 min in case they work out later
+  if (Date.now() - lastSync < 30 * 60 * 1000) return;
+  stravaSyncToday();
 }
 
 // ── Init ──
