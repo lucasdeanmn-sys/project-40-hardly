@@ -496,6 +496,45 @@
     touch-action: manipulation;
   }
   .modal-btn.secondary { background: none; border: 1px solid var(--border); color: var(--text-dim); }
+
+  /* ── Strava ── */
+  .strava-connect-btn {
+    display: flex; align-items: center; justify-content: center; gap: 9px;
+    width: 100%; padding: 13px 16px;
+    background: #FC4C02; color: #fff;
+    border: none; border-radius: 12px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.15s;
+    margin-bottom: 4px;
+  }
+  .strava-connect-btn:active { opacity: 0.85; }
+  .strava-row {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--surface); border: 1px solid rgba(252,76,2,0.2);
+    border-radius: 12px; padding: 10px 14px; margin-bottom: 4px;
+  }
+  .strava-wordmark {
+    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+    text-transform: uppercase; color: #FC4C02; flex-shrink: 0;
+  }
+  .strava-info { flex: 1; min-width: 0; }
+  .strava-athlete { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.2; }
+  .strava-meta { font-size: 11px; color: var(--text-mute); margin-top: 1px; }
+  .strava-sync-btn {
+    background: none; border: 1px solid rgba(252,76,2,0.35);
+    color: #FC4C02; border-radius: 8px; padding: 7px 13px;
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0; transition: background 0.15s;
+  }
+  .strava-sync-btn:active { background: rgba(252,76,2,0.1); }
+  .strava-sync-btn:disabled { opacity: 0.4; cursor: default; }
+  .strava-goal-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #FC4C02; display: inline-block; flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -557,6 +596,8 @@
       </div>
     </div>
   </div>
+
+  <div id="strava-section" style="margin-bottom:4px"></div>
 
   <div class="goal-group-label">Morning habits</div>
   <div id="goals-morning"></div>
@@ -785,12 +826,16 @@ function renderGoals() {
       const fire    = streak >= 3
         ? `<span style="font-size:13px;line-height:1" title="${streak}-day streak">🔥</span>`
         : "";
+      const stravaChecked = data[key]?.strava_checked || [];
+      const stravaPin = stravaChecked.includes(goal.id)
+        ? `<span class="strava-goal-dot" title="Auto-checked by Strava"></span>`
+        : "";
       const card = document.createElement("div");
       card.className = "goal-card" + (checked ? " checked" : "");
       card.innerHTML = `
         <div class="goal-icon">${goal.icon}</div>
         <div class="goal-text">
-          <div class="goal-label">${goal.label}${fire}</div>
+          <div class="goal-label">${goal.label}${fire}${stravaPin}</div>
           <div class="goal-sub">${goal.sub}</div>
         </div>
         <div class="goal-check">
@@ -838,6 +883,7 @@ function updateInputs() {
 
 function renderToday() {
   renderDateDisplay();
+  renderStravaSection();
   renderGoals();
   updateRing();
   updateInputs();
@@ -1228,9 +1274,174 @@ function switchTab(tab) {
   if (tab === "summary") { renderSummary(); initContribTooltip(); }
 }
 
+// ── Strava ──
+const STRAVA_CLIENT_ID   = "207897";
+const STRAVA_REDIRECT    = "https://project-40-hardly.vercel.app";
+let   stravaState        = "idle"; // idle | syncing | error
+
+function getStravaToken()   { return localStorage.getItem("strava_access_token") || ""; }
+function getStravaRefresh() { return localStorage.getItem("strava_refresh_token") || ""; }
+function getStravaExpiry()  { return parseInt(localStorage.getItem("strava_expires_at") || "0"); }
+function getStravaAthlete() {
+  try { return JSON.parse(localStorage.getItem("strava_athlete") || "null"); } catch { return null; }
+}
+function clearStrava() {
+  ["strava_access_token","strava_refresh_token","strava_expires_at","strava_athlete"]
+    .forEach(k => localStorage.removeItem(k));
+}
+function stravaIsConnected() { return !!(getStravaToken() || getStravaRefresh()); }
+
+function stravaConnect() {
+  const url = `https://www.strava.com/oauth/authorize`
+    + `?client_id=${STRAVA_CLIENT_ID}`
+    + `&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT)}`
+    + `&response_type=code`
+    + `&scope=activity:read_all`
+    + `&approval_prompt=auto`;
+  window.location.href = url;
+}
+
+async function stravaExchangeCode(code) {
+  const res = await fetch(`/api/strava-auth?code=${encodeURIComponent(code)}`);
+  if (!res.ok) throw new Error("Token exchange failed");
+  const d = await res.json();
+  localStorage.setItem("strava_access_token", d.access_token);
+  localStorage.setItem("strava_refresh_token", d.refresh_token);
+  localStorage.setItem("strava_expires_at",    d.expires_at);
+  if (d.athlete) localStorage.setItem("strava_athlete", JSON.stringify(d.athlete));
+}
+
+async function stravaFreshToken() {
+  const now = Math.floor(Date.now() / 1000);
+  if (getStravaToken() && now < getStravaExpiry() - 60) return getStravaToken();
+  const refresh = getStravaRefresh();
+  if (!refresh) return null;
+  const res = await fetch(`/api/strava-auth?refresh_token=${encodeURIComponent(refresh)}`);
+  if (!res.ok) { clearStrava(); return null; }
+  const d = await res.json();
+  localStorage.setItem("strava_access_token", d.access_token);
+  localStorage.setItem("strava_refresh_token", d.refresh_token);
+  localStorage.setItem("strava_expires_at",    d.expires_at);
+  return d.access_token;
+}
+
+async function stravaSyncToday() {
+  if (!isToday(currentDate)) return;
+  const token = await stravaFreshToken();
+  if (!token) { stravaConnect(); return; }
+
+  stravaState = "syncing";
+  renderStravaSection();
+
+  const key   = toKey(currentDate);
+  const start = new Date(); start.setHours(0,0,0,0);
+  const end   = new Date(); end.setHours(23,59,59,999);
+
+  try {
+    const res = await fetch(
+      `https://www.strava.com/api/v3/athlete/activities`
+        + `?after=${Math.floor(start/1000)}`
+        + `&before=${Math.floor(end/1000)}`
+        + `&per_page=30`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (res.status === 401) { clearStrava(); stravaState = "error"; renderStravaSection(); return; }
+    if (!res.ok) throw new Error("API error");
+
+    const activities = await res.json();
+    if (!data[key]) data[key] = {};
+
+    const checked = [];
+    if (activities.some(a => (a.moving_time || a.elapsed_time || 0) >= 1800)) {
+      data[key].outside = true;
+      checked.push("outside");
+    }
+    if (activities.length > 0) {
+      data[key].additional = true;
+      checked.push("additional");
+    }
+    data[key].strava_checked       = checked;
+    data[key].strava_synced_at     = Date.now();
+    data[key].strava_activity_count = activities.length;
+
+    stravaState = "idle";
+    save();
+    renderToday();
+  } catch {
+    stravaState = "error";
+    renderStravaSection();
+  }
+}
+
+function stravaDisconnect() {
+  if (!confirm("Disconnect Strava?")) return;
+  clearStrava();
+  stravaState = "idle";
+  renderStravaSection();
+}
+
+function renderStravaSection() {
+  const el = document.getElementById("strava-section");
+  if (!el) return;
+
+  if (!stravaIsConnected()) {
+    el.innerHTML = `
+      <button class="strava-connect-btn" onclick="stravaConnect()">
+        <span style="font-weight:800;letter-spacing:0.08em;font-size:12px">STRAVA</span>
+        Connect to auto-check exercise goals
+      </button>`;
+    return;
+  }
+
+  const athlete  = getStravaAthlete();
+  const key      = toKey(currentDate);
+  const syncedAt = data[key]?.strava_synced_at;
+  const count    = data[key]?.strava_activity_count ?? null;
+  const syncing  = stravaState === "syncing";
+
+  let meta;
+  if (syncing) {
+    meta = "Syncing…";
+  } else if (stravaState === "error") {
+    meta = "Sync failed — tap to retry";
+  } else if (syncedAt) {
+    const diff = Date.now() - syncedAt;
+    const ago  = diff < 60000 ? "just now"
+               : diff < 3600000 ? `${Math.floor(diff/60000)}m ago`
+               : `${Math.floor(diff/3600000)}h ago`;
+    meta = count > 0
+      ? `${count} activit${count === 1 ? "y" : "ies"} · synced ${ago}`
+      : `No activities today · synced ${ago}`;
+  } else {
+    meta = isToday(currentDate) ? "Tap Sync to check today's activities" : "";
+  }
+
+  el.innerHTML = `
+    <div class="strava-row">
+      <span class="strava-wordmark">Strava</span>
+      <div class="strava-info">
+        ${athlete?.firstname ? `<div class="strava-athlete">${athlete.firstname}</div>` : ""}
+        <div class="strava-meta">${meta}</div>
+      </div>
+      ${isToday(currentDate)
+        ? `<button class="strava-sync-btn" onclick="stravaSyncToday()" ${syncing ? "disabled" : ""}>${syncing ? "…" : "Sync"}</button>`
+        : ""}
+    </div>`;
+}
+
 // ── Init ──
 load();
 updateCountdown();
+
+// Handle Strava OAuth callback (?code=... in URL after redirect)
+(function () {
+  const p    = new URLSearchParams(window.location.search);
+  const code = p.get("code");
+  const err  = p.get("error");
+  if (code || err) window.history.replaceState({}, "", window.location.pathname);
+  if (code) stravaExchangeCode(code).catch(() => {}).then(() => renderToday());
+})();
+
 renderToday();
 setInterval(updateCountdown, 60000);
 
