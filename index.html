@@ -907,7 +907,7 @@ function jumpToDay(key) {
 
 // ── Contribution graph ──
 function renderContribGraph() {
-  const JOURNEY_START = new Date(2026, 2, 10); // Mar 10
+  const JOURNEY_START = new Date(2026, 3, 15); // Apr 15
   const JOURNEY_END   = new Date(2026, 8, 28); // Sep 28
   const today         = new Date();
   today.setHours(0,0,0,0);
@@ -1042,7 +1042,7 @@ function initContribTooltip() {
   // Scroll to show today
   const today = new Date();
   today.setHours(0,0,0,0);
-  const JOURNEY_START = new Date(2026, 2, 10);
+  const JOURNEY_START = new Date(2026, 3, 15);
   const startMon = new Date(JOURNEY_START);
   const dow = startMon.getDay();
   startMon.setDate(startMon.getDate() + ((dow === 0) ? -6 : 1 - dow));
@@ -1152,7 +1152,7 @@ function renderSummary() {
   const perfectDays  = allKeys.filter(k => getScore(k) === GOALS.length).length;
   const overallPct   = Math.round(100 * totalChecks / (totalDays * GOALS.length));
 
-  const journeyStart = new Date(2026, 2, 10);
+  const journeyStart = new Date(2026, 3, 15);
   const daysToGo     = Math.max(0, Math.ceil((BIRTHDAY - today) / 86400000));
   const totalJourney = Math.ceil((BIRTHDAY - journeyStart) / 86400000);
   const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - journeyStart) / 86400000)) / totalJourney));
@@ -1181,7 +1181,7 @@ function renderSummary() {
         <div class="progress-bar-label"><span>Journey to 40</span><span>${journeyPct}%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${journeyPct}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-mute);margin-top:4px">
-          <span>Mar 10</span><span>${daysToGo} days left</span><span>Sep 28</span>
+          <span>Apr 15</span><span>${daysToGo} days left</span><span>Sep 28</span>
         </div>
       </div>
     </div>
