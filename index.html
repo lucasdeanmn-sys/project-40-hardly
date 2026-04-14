@@ -315,6 +315,122 @@
   .weight-chart-svg { width: 100%; height: 100px; display: block; margin-bottom: 6px; }
   .chart-empty { text-align: center; color: var(--text-mute); font-size: 12px; padding: 20px 0; }
 
+  /* ── Contribution graph ── */
+  .contrib-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .contrib-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: max-content;
+  }
+  .contrib-month-row {
+    display: flex;
+    margin-left: 22px; /* align with grid */
+    margin-bottom: 4px;
+    height: 14px;
+  }
+  .contrib-month-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    white-space: nowrap;
+    overflow: visible;
+  }
+  .contrib-grid-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+  }
+  .contrib-day-labels {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 4px;
+    width: 18px;
+    flex-shrink: 0;
+  }
+  .contrib-day-label {
+    font-size: 8px;
+    color: var(--text-mute);
+    height: 11px;
+    line-height: 11px;
+    text-align: right;
+  }
+  .contrib-columns {
+    display: flex;
+    gap: 2px;
+  }
+  .contrib-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .contrib-cell {
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.1s;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .contrib-cell:hover { transform: scale(1.35); z-index: 2; }
+  .contrib-cell.future { opacity: 0.2; cursor: default; }
+  .contrib-cell.future:hover { transform: none; }
+  .contrib-cell.is-today { box-shadow: 0 0 0 1.5px var(--gold); }
+
+  /* Score colour scale */
+  .cs-0  { background: var(--surface2); }
+  .cs-1  { background: rgba(200,169,110,0.18); }
+  .cs-2  { background: rgba(200,169,110,0.32); }
+  .cs-3  { background: rgba(200,169,110,0.46); }
+  .cs-4  { background: rgba(200,169,110,0.58); }
+  .cs-5  { background: rgba(200,169,110,0.70); }
+  .cs-6  { background: rgba(200,169,110,0.84); }
+  .cs-7  { background: #c8a96e; box-shadow: 0 0 5px rgba(200,169,110,0.55); }
+
+  /* Tooltip */
+  .contrib-tooltip {
+    position: fixed;
+    background: rgba(9,9,12,0.97);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 200;
+    white-space: nowrap;
+    transform: translate(-50%, -110%);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    display: none;
+  }
+  .contrib-tooltip.visible { display: block; }
+
+  /* Legend */
+  .contrib-legend {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 12px;
+    justify-content: flex-end;
+  }
+  .contrib-legend-label {
+    font-size: 10px;
+    color: var(--text-mute);
+  }
+  .contrib-legend-cell {
+    width: 11px; height: 11px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
   /* ── Sync dot ── */
   .sync-dot {
     width: 7px; height: 7px; border-radius: 50%;
@@ -383,6 +499,9 @@
 </style>
 </head>
 <body>
+
+<!-- Contribution graph tooltip -->
+<div id="contrib-tooltip" class="contrib-tooltip"></div>
 
 <!-- Celebration overlay -->
 <div id="celebration">
@@ -786,6 +905,176 @@ function jumpToDay(key) {
   switchTab("today");
 }
 
+// ── Contribution graph ──
+function renderContribGraph() {
+  const JOURNEY_START = new Date(2026, 2, 10); // Mar 10
+  const JOURNEY_END   = new Date(2026, 8, 28); // Sep 28
+  const today         = new Date();
+  today.setHours(0,0,0,0);
+
+  // Rewind to the Monday on or before journey start
+  const startMon = new Date(JOURNEY_START);
+  const dow = startMon.getDay(); // 0=Sun
+  const toMon = (dow === 0) ? -6 : 1 - dow;
+  startMon.setDate(startMon.getDate() + toMon);
+
+  // Advance to the Sunday on or after journey end
+  const endSun = new Date(JOURNEY_END);
+  const edow = endSun.getDay();
+  if (edow !== 0) endSun.setDate(endSun.getDate() + (7 - edow));
+
+  // Build week columns: each column = Mon–Sun
+  const weeks = [];
+  const cur = new Date(startMon);
+  while (cur <= endSun) {
+    const week = [];
+    for (let d = 0; d < 7; d++) {
+      week.push(new Date(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+
+  // Month label positions (column index where month first appears)
+  const monthLabels = []; // { col, label }
+  weeks.forEach((week, wi) => {
+    const mon = week[0]; // Monday
+    // Show label if this is the first week of a month visible in this column
+    const hasNewMonth = week.some((d, di) => {
+      if (d < JOURNEY_START || d > JOURNEY_END) return false;
+      return d.getDate() === 1 || (di === 0 && d.getDate() <= 7 && wi === 0);
+    });
+    if (wi === 0) {
+      // Always label the first column
+      const firstVisible = week.find(d => d >= JOURNEY_START) || week[0];
+      monthLabels.push({ col: wi, label: MONTHS[firstVisible.getMonth()] });
+    } else if (hasNewMonth) {
+      const firstOfMonth = week.find(d => d.getDate() === 1 && d >= JOURNEY_START && d <= JOURNEY_END);
+      if (firstOfMonth) monthLabels.push({ col: wi, label: MONTHS[firstOfMonth.getMonth()] });
+    }
+  });
+
+  // Month row: one span per week column
+  const CELL = 13; // cell + gap
+  let monthRowHtml = '<div class="contrib-month-row">';
+  let lastLabelCol = -99;
+  weeks.forEach((_, wi) => {
+    const lbl = monthLabels.find(m => m.col === wi);
+    if (lbl && wi - lastLabelCol > 1) {
+      monthRowHtml += `<span class="contrib-month-label" style="width:${CELL}px">${lbl.label}</span>`;
+      lastLabelCol = wi;
+    } else {
+      monthRowHtml += `<span style="width:${CELL}px;flex-shrink:0"></span>`;
+    }
+  });
+  monthRowHtml += '</div>';
+
+  // Day labels (Mon, Wed, Fri on rows 0,2,4 → indices 0=Mon,1=Tue,...,6=Sun)
+  const DAY_ABBR = ['M','','W','','F','','S'];
+  let dayLabelsHtml = '<div class="contrib-day-labels">';
+  for (let r = 0; r < 7; r++) {
+    dayLabelsHtml += `<div class="contrib-day-label">${DAY_ABBR[r]}</div>`;
+  }
+  dayLabelsHtml += '</div>';
+
+  // Cells
+  let colsHtml = '<div class="contrib-columns">';
+  weeks.forEach((week) => {
+    colsHtml += '<div class="contrib-col">';
+    week.forEach((d) => {
+      const key       = toKey(d);
+      const inRange   = d >= JOURNEY_START && d <= JOURNEY_END;
+      const isFuture  = d > today;
+      const isT       = toKey(d) === todayKey();
+      const score     = inRange ? getScore(key) : -1;
+
+      let cls = 'contrib-cell';
+      if (!inRange) {
+        cls += ' cs-0';
+        cls += ' future'; // invisible filler
+      } else if (isFuture) {
+        cls += ' cs-0 future';
+      } else {
+        cls += ` cs-${score}`;
+      }
+      if (isT) cls += ' is-today';
+
+      const title = inRange
+        ? `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} — ${isFuture ? '–' : score + '/7'}`
+        : '';
+
+      const onclick = inRange && !isFuture
+        ? `onclick="jumpToDay('${key}')" `
+        : '';
+
+      colsHtml += `<div class="${cls}" ${onclick}data-tip="${title}" style="${!inRange ? 'opacity:0;pointer-events:none' : ''}"></div>`;
+    });
+    colsHtml += '</div>';
+  });
+  colsHtml += '</div>';
+
+  // Legend
+  const legendHtml = `
+    <div class="contrib-legend">
+      <span class="contrib-legend-label">0</span>
+      ${[0,1,2,3,4,5,6,7].map(s => `<div class="contrib-legend-cell cs-${s}"></div>`).join('')}
+      <span class="contrib-legend-label">7</span>
+    </div>`;
+
+  return `
+    <div class="contrib-scroll" id="contrib-scroll">
+      <div class="contrib-wrap">
+        ${monthRowHtml}
+        <div class="contrib-grid-row">
+          ${dayLabelsHtml}
+          ${colsHtml}
+        </div>
+      </div>
+    </div>
+    ${legendHtml}`;
+}
+
+function initContribTooltip() {
+  const tooltip = document.getElementById('contrib-tooltip');
+  const scroll  = document.getElementById('contrib-scroll');
+  if (!scroll || !tooltip) return;
+
+  // Scroll to show today
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const JOURNEY_START = new Date(2026, 2, 10);
+  const startMon = new Date(JOURNEY_START);
+  const dow = startMon.getDay();
+  startMon.setDate(startMon.getDate() + ((dow === 0) ? -6 : 1 - dow));
+  const weeksSinceStart = Math.floor((today - startMon) / (7 * 86400000));
+  const CELL = 13;
+  const scrollTarget = Math.max(0, (weeksSinceStart - 3) * CELL);
+  scroll.scrollLeft = scrollTarget;
+
+  scroll.addEventListener('mouseover', e => {
+    const cell = e.target.closest('.contrib-cell');
+    if (!cell || !cell.dataset.tip) { tooltip.classList.remove('visible'); return; }
+    tooltip.textContent = cell.dataset.tip;
+    tooltip.classList.add('visible');
+  });
+  scroll.addEventListener('mousemove', e => {
+    tooltip.style.left = e.clientX + 'px';
+    tooltip.style.top  = e.clientY + 'px';
+  });
+  scroll.addEventListener('mouseleave', () => tooltip.classList.remove('visible'));
+
+  // Touch: show tooltip briefly on tap (before jumpToDay fires)
+  scroll.addEventListener('touchstart', e => {
+    const cell = e.target.closest('.contrib-cell');
+    if (!cell || !cell.dataset.tip) return;
+    tooltip.textContent = cell.dataset.tip;
+    tooltip.style.left  = e.touches[0].clientX + 'px';
+    tooltip.style.top   = e.touches[0].clientY + 'px';
+    tooltip.classList.add('visible');
+    setTimeout(() => tooltip.classList.remove('visible'), 1200);
+  }, { passive: true });
+}
+
 // ── Weight chart ──
 function renderWeightChart(allKeys) {
   const pts = allKeys
@@ -845,9 +1134,15 @@ function renderWeightChart(allKeys) {
 // ── Summary ──
 function renderSummary() {
   const allKeys = Object.keys(data).sort();
+
+  // Always render the contribution graph — it shows the full journey
   if (!allKeys.length) {
-    document.getElementById("summary-content").innerHTML =
-      `<div style="text-align:center;color:var(--text-dim);padding:60px 20px">No data yet. Start checking off goals!</div>`;
+    document.getElementById("summary-content").innerHTML = `
+      <div class="summary-card">
+        <div class="summary-card-title">Journey to 40</div>
+        ${renderContribGraph()}
+      </div>
+      <div style="text-align:center;color:var(--text-dim);padding:40px 20px">No data yet. Start checking off goals!</div>`;
     return;
   }
 
@@ -863,6 +1158,11 @@ function renderSummary() {
   const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - journeyStart) / 86400000)) / totalJourney));
 
   document.getElementById("summary-content").innerHTML = `
+    <div class="summary-card">
+      <div class="summary-card-title">Journey to 40</div>
+      ${renderContribGraph()}
+    </div>
+
     <div class="summary-card">
       <div class="summary-card-title">Overall</div>
       <div class="summary-stat-row">
@@ -925,7 +1225,7 @@ function switchTab(tab) {
     document.getElementById(`nav-${t}`).classList.toggle("active", t === tab);
   });
   if (tab === "week")    renderWeek();
-  if (tab === "summary") renderSummary();
+  if (tab === "summary") { renderSummary(); initContribTooltip(); }
 }
 
 // ── Init ──
