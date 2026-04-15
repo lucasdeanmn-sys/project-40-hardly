@@ -205,6 +205,40 @@
     letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-dim); margin-bottom: 8px;
   }
+  .field-label-row {
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 8px;
+  }
+  .field-label-row .field-label { margin-bottom: 0; }
+  .metric-dot { font-size: 13px; line-height: 1; }
+  .metric-input { width: 120px; }
+  .protein-bar-bg {
+    height: 4px; background: var(--text-mute);
+    border-radius: 2px; overflow: hidden; margin-top: 8px;
+  }
+  .protein-bar-fill {
+    height: 100%; border-radius: 2px;
+    transition: width 0.3s ease, background 0.3s ease;
+  }
+  .protein-bar-labels {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--text-mute); margin-top: 3px;
+  }
+  /* ── Week metrics row ── */
+  .week-metrics { margin-top: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .week-metrics-table { width: 100%; border-collapse: collapse; }
+  .week-metrics-table td {
+    text-align: center; font-size: 11px;
+    padding: 3px 2px; color: var(--text-dim);
+  }
+  .week-metrics-table td:first-child {
+    text-align: left; font-size: 10px;
+    color: var(--text-mute); padding-left: 2px; white-space: nowrap;
+  }
+  .mv-red    { color: var(--red)    !important; font-weight: 600; }
+  .mv-yellow { color: #c8a020      !important; font-weight: 600; }
+  .mv-orange { color: #e07840      !important; font-weight: 600; }
+  .mv-green  { color: var(--green) !important; font-weight: 600; }
   .field-input {
     width: 100%;
     background: var(--surface);
@@ -805,6 +839,33 @@
   </div>
 
   <div class="field-group">
+    <div class="field-label-row">
+      <span class="field-label">Sleep (hrs)</span>
+      <span id="sleep-dot" class="metric-dot"></span>
+    </div>
+    <input class="field-input metric-input" type="number" inputmode="decimal"
+      id="sleep-input" placeholder="—" step="0.5" min="0" max="24"
+      oninput="saveField('sleep', this.value ? parseFloat(this.value) : null); updateSleepDot()">
+  </div>
+
+  <div class="field-group">
+    <div class="field-label-row">
+      <span class="field-label">Protein (g)</span>
+      <span id="protein-dot" class="metric-dot"></span>
+    </div>
+    <input class="field-input metric-input" type="number" inputmode="decimal"
+      id="protein-input" placeholder="—" step="5" min="0"
+      oninput="saveField('protein', this.value ? parseFloat(this.value) : null); updateProteinBar()">
+    <div id="protein-progress" style="display:none">
+      <div class="protein-bar-bg"><div id="protein-bar-fill" class="protein-bar-fill" style="width:0%"></div></div>
+      <div class="protein-bar-labels">
+        <span id="protein-bar-label"></span>
+        <span>target 170g</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="field-group">
     <div class="field-label">Daily note</div>
     <textarea class="field-input" id="note-input" placeholder="How'd it go?"
       oninput="saveField('note', this.value)"></textarea>
@@ -824,6 +885,7 @@
     <table class="week-table" id="week-table"></table>
   </div>
   <div class="week-scores" id="week-scores"></div>
+  <div class="week-metrics" id="week-metrics"></div>
   <button class="share-week-btn" onclick="shareWeek()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
@@ -866,7 +928,7 @@ const STORAGE_KEY = "project40hardly_v1";
 const GOALS = [
   // Core — drive the ring, streaks, coins, Boss Days
   { id: "coach",     label: "Coach Workout",    sub: "prescribed training",               icon: "🏋️", group: "core"  },
-  { id: "nutrition", label: "Nutrition",        sub: "on plan",                           icon: "🥗", group: "core"  },
+  { id: "nutrition", label: "Nutrition + Protein 170g+", sub: "on plan and hit protein target", icon: "🥗", group: "core"  },
   { id: "reading",   label: "Read",             sub: "fiction or non-fiction, 10+ pages", icon: "📖", group: "core"  },
   // Bonus — celebrated, never penalised
   { id: "walk",      label: "Morning Walk",     sub: "outside time",                      icon: "🚶", group: "bonus" },
@@ -926,6 +988,101 @@ function currentStreak(goalId) {
     else break;
   }
   return streak;
+}
+
+// ── Sleep & Protein ──
+const PROTEIN_TARGET = 170;
+
+function sleepDot(hours, dateKey) {
+  if (hours == null || isNaN(hours)) return "";
+  if (hours < 6.5) return "🔴";
+  // 🟢 requires 7.5+ AND within 0.5h of the previous night (consistency proxy)
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const prevHours = data[toKey(new Date(y, m - 1, d - 1))]?.sleep ?? null;
+  const consistent = prevHours === null || Math.abs(hours - prevHours) <= 0.5;
+  if (hours >= 7.5 && consistent) return "🟢";
+  return "🟡";
+}
+
+function proteinDot(grams) {
+  if (grams == null || isNaN(grams)) return "";
+  if (grams >= PROTEIN_TARGET) return "🟢";
+  if (grams >= 150) return "🟠";
+  if (grams >= 100) return "🟡";
+  return "🔴";
+}
+
+function proteinBarColor(grams) {
+  if (grams >= PROTEIN_TARGET) return "var(--green)";
+  if (grams >= 150) return "#e07840";
+  if (grams >= 100) return "#c8a020";
+  return "var(--red)";
+}
+
+function updateSleepDot() {
+  const input = document.getElementById("sleep-input");
+  const dotEl = document.getElementById("sleep-dot");
+  if (!dotEl || !input) return;
+  const hours = input.value ? parseFloat(input.value) : null;
+  dotEl.textContent = hours != null ? sleepDot(hours, toKey(currentDate)) : "";
+}
+
+function updateProteinBar() {
+  const input = document.getElementById("protein-input");
+  if (!input) return;
+  const g    = input.value ? parseFloat(input.value) : null;
+  const prog = document.getElementById("protein-progress");
+  const fill = document.getElementById("protein-bar-fill");
+  const lbl  = document.getElementById("protein-bar-label");
+  const dot  = document.getElementById("protein-dot");
+  if (dot)  dot.textContent  = proteinDot(g);
+  if (prog) prog.style.display = g != null ? "block" : "none";
+  if (fill) {
+    const pct = g != null ? Math.min(100, Math.round(100 * g / PROTEIN_TARGET)) : 0;
+    fill.style.width      = pct + "%";
+    fill.style.background = g != null ? proteinBarColor(g) : "";
+  }
+  if (lbl)  lbl.textContent = g != null ? `${g}g` : "";
+}
+
+// ── Sleep/Protein summary stats ──
+function avgOf(vals) { return vals.length ? vals.reduce((s,x)=>s+x,0)/vals.length : null; }
+
+function sleepStatsFor(keys) {
+  const hrs = keys.map(k => data[k]?.sleep).filter(h => h != null);
+  if (!hrs.length) return null;
+  const avg = avgOf(hrs);
+  const variance = hrs.reduce((s,x) => s + (x - avg)**2, 0) / hrs.length;
+  const sd = Math.sqrt(variance);
+  const consistency = sd < 0.5  ? { label: "Excellent", color: "var(--green)"  }
+                    : sd < 1.0  ? { label: "Good",      color: "var(--gold)"   }
+                    : sd < 1.5  ? { label: "Fair",       color: "#c8a020"       }
+                    :             { label: "Variable",   color: "var(--red)"    };
+  return { avg: avg.toFixed(1), sd: sd.toFixed(1), consistency, n: hrs.length };
+}
+
+function proteinStatsFor(keys) {
+  const gs = keys.map(k => data[k]?.protein).filter(g => g != null);
+  if (!gs.length) return null;
+  return { avg: Math.round(avgOf(gs)), hit: gs.filter(g => g >= PROTEIN_TARGET).length, n: gs.length };
+}
+
+function sleepCorrelation(allKeys) {
+  const good = [], poor = [];
+  allKeys.forEach(k => {
+    const [y, m, d] = k.split("-").map(Number);
+    const prevSleep = data[toKey(new Date(y, m-1, d-1))]?.sleep ?? null;
+    if (prevSleep === null) return;
+    prevSleep >= 7.5 ? good.push(getScore(k)) : poor.push(getScore(k));
+  });
+  if (good.length < 3 || poor.length < 3) return null;
+  const ga = avgOf(good), pa = avgOf(poor);
+  const diff = ga - pa;
+  if (diff > 0.3)
+    return { text: `Your best goal days follow nights with 7.5+ hrs sleep — avg ${ga.toFixed(1)}/3 core goals vs ${pa.toFixed(1)}/3 after shorter nights.`, positive: true };
+  if (diff < -0.3)
+    return { text: `You show up regardless of sleep — ${pa.toFixed(1)}/3 core goals even after short nights (vs ${ga.toFixed(1)}/3 after 7.5+ hrs). Respect.`, positive: true };
+  return { text: `No strong sleep→performance pattern yet (${good.length + poor.length} days compared). Keep logging.`, positive: false };
 }
 
 // ── XP & Level ──
@@ -1382,8 +1539,12 @@ function updateRing() {
 
 function updateInputs() {
   const day = getDay(toKey(currentDate));
-  document.getElementById("weight-input").value = day.weight != null ? day.weight : "";
-  document.getElementById("note-input").value   = day.note || "";
+  document.getElementById("weight-input").value  = day.weight  != null ? day.weight  : "";
+  document.getElementById("sleep-input").value   = day.sleep   != null ? day.sleep   : "";
+  document.getElementById("protein-input").value = day.protein != null ? day.protein : "";
+  document.getElementById("note-input").value    = day.note    || "";
+  updateSleepDot();
+  updateProteinBar();
 }
 
 function renderToday() {
@@ -1455,6 +1616,25 @@ function renderWeek() {
       <div class="day-score-day">${DAYS[d.getDay()]}</div>
     </div>`;
   }).join("");
+
+  // Sleep & protein mini-rows
+  const sleepRow = days.map(d => {
+    const h = data[toKey(d)]?.sleep;
+    if (h == null) return `<td style="color:var(--text-mute)">—</td>`;
+    const cls = h >= 7.5 ? "mv-green" : h >= 6.5 ? "mv-yellow" : "mv-red";
+    return `<td class="${cls}">${h}</td>`;
+  }).join("");
+  const proteinRow = days.map(d => {
+    const g = data[toKey(d)]?.protein;
+    if (g == null) return `<td style="color:var(--text-mute)">—</td>`;
+    const cls = g >= 170 ? "mv-green" : g >= 150 ? "mv-orange" : g >= 100 ? "mv-yellow" : "mv-red";
+    return `<td class="${cls}">${g}</td>`;
+  }).join("");
+  document.getElementById("week-metrics").innerHTML = `
+    <table class="week-metrics-table">
+      <tr><td>💤 Sleep</td>${sleepRow}</tr>
+      <tr><td>🥩 Protein</td>${proteinRow}</tr>
+    </table>`;
 }
 
 function shiftWeek(delta) {
@@ -1834,6 +2014,46 @@ function renderSummary() {
       <div class="summary-card-title">Weight trend</div>
       ${renderWeightChart(allKeys)}
     </div>
+
+    ${(() => {
+      const last7Keys  = allKeys.filter(k => { const d=new Date(k); return (today-d)/86400000 < 7; });
+      const last30Keys = allKeys.filter(k => { const d=new Date(k); return (today-d)/86400000 < 30; });
+      const s7  = sleepStatsFor(last7Keys);
+      const s30 = sleepStatsFor(last30Keys);
+      const p7  = proteinStatsFor(last7Keys);
+      const p30 = proteinStatsFor(last30Keys);
+      const corr = sleepCorrelation(allKeys);
+      if (!s7 && !p7) return `<div class="summary-card">
+        <div class="summary-card-title">Sleep &amp; Protein</div>
+        <div style="color:var(--text-mute);font-size:13px;padding:8px 0">Log sleep and protein on the Today tab to see trends here.</div>
+      </div>`;
+      const statRow = (label, val, sub='') => `<div class="summary-stat-row">
+        <span class="summary-stat-label">${label}</span>
+        <span class="summary-stat-val">${val}${sub ? `<span style="font-size:11px;font-weight:400;color:var(--text-dim);margin-left:5px">${sub}</span>` : ''}</span>
+      </div>`;
+      return `<div class="summary-card">
+        <div class="summary-card-title">Sleep &amp; Protein</div>
+        ${s7 || s30 ? `
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px">Sleep</div>
+          ${s7  ? statRow("Avg last 7 days",  s7.avg  + " hrs") : ""}
+          ${s30 ? statRow("Avg last 30 days", s30.avg + " hrs") : ""}
+          ${(s7 || s30) ? statRow("Consistency", (s7||s30).consistency.label,
+            `<span style="color:${(s7||s30).consistency.color}">(±${(s7||s30).sd} hrs std dev)</span>`) : ""}
+        ` : ""}
+        ${p7 || p30 ? `
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-top:12px;margin-bottom:8px">Protein</div>
+          ${p7  ? statRow("Avg last 7 days",  p7.avg  + "g") : ""}
+          ${p30 ? statRow("Avg last 30 days", p30.avg + "g") : ""}
+          ${p7  ? statRow("Target days (7d)",  `${p7.hit}/${p7.n}`) : ""}
+          ${p30 && p30.n > 7 ? statRow("Target days (30d)", `${p30.hit}/${p30.n}`) : ""}
+        ` : ""}
+        ${corr ? `
+          <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:2px solid ${corr.positive ? "var(--gold)" : "var(--text-mute)"}">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">Insight</div>
+            <div style="font-size:12px;color:var(--text-dim);line-height:1.5">${corr.text}</div>
+          </div>` : ""}
+      </div>`;
+    })()}
 
     <div class="summary-card">
       <div class="summary-card-title">Core streaks</div>
