@@ -539,6 +539,156 @@
     width: 6px; height: 6px; border-radius: 50%;
     background: #FC4C02; display: inline-block; flex-shrink: 0;
   }
+
+  /* ── Gamification bar ── */
+  .xp-section {
+    padding: 0 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .level-coin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .level-badge { display: flex; align-items: center; gap: 6px; }
+  .level-name-text {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--gold);
+  }
+  .level-num-chip {
+    font-size: 9px; font-weight: 600;
+    color: var(--text-mute); background: var(--surface2);
+    border-radius: 4px; padding: 2px 5px; letter-spacing: 0.04em;
+  }
+  .coin-badge {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 700; color: var(--gold);
+    background: var(--gold-faint); border-radius: 8px; padding: 3px 8px;
+  }
+  .xp-bar-row { display: flex; align-items: center; gap: 8px; }
+  .xp-count {
+    font-size: 10px; color: var(--text-mute);
+    white-space: nowrap; min-width: 44px; text-align: right;
+  }
+  .xp-bar-bg {
+    flex: 1; height: 4px;
+    background: var(--text-mute); border-radius: 2px; overflow: hidden;
+  }
+  .xp-bar-fill {
+    height: 100%; background: var(--gold);
+    border-radius: 2px; transition: width 0.5s ease;
+  }
+  .xp-next { font-size: 10px; color: var(--text-mute); white-space: nowrap; min-width: 44px; }
+  .form-row { display: flex; align-items: center; justify-content: space-between; }
+  .form-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 6px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .form-cold    { background: rgba(70,120,200,0.12); color: #7090d0; }
+  .form-warming { background: rgba(70,160,220,0.12); color: #50b0dc; }
+  .form-in-form { background: rgba(92,184,122,0.12); color: #5cb87a; }
+  .form-on-fire { background: rgba(220,140,50,0.15); color: #dc8c32; }
+  .form-peak    { background: rgba(200,169,110,0.18); color: var(--gold); box-shadow: 0 0 8px rgba(200,169,110,0.25); }
+
+  /* ── Boss Day banner ── */
+  .boss-day-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(200,169,110,0.06);
+    border: 1px solid rgba(200,169,110,0.25);
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
+  }
+  .boss-emoji { font-size: 22px; flex-shrink: 0; }
+  .boss-info { flex: 1; }
+  .boss-title { font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em; text-transform: uppercase; }
+  .boss-desc  { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+
+  /* ── Level-up overlay ── */
+  #levelup-overlay {
+    position: fixed; inset: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none; opacity: 0;
+  }
+  #levelup-overlay.show {
+    animation: celebIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards,
+               celebOut 0.4s ease 2.6s forwards;
+  }
+  .levelup-box {
+    background: rgba(9,9,12,0.97);
+    border: 2px solid var(--gold);
+    border-radius: 22px; padding: 28px 48px; text-align: center;
+    box-shadow: 0 0 120px rgba(200,169,110,0.4), 0 0 40px rgba(200,169,110,0.2);
+  }
+  .levelup-emoji { font-size: 42px; display: block; margin-bottom: 10px; line-height: 1; }
+  .levelup-sub  { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+  .levelup-name { font-size: 26px; font-weight: 800; color: var(--gold); letter-spacing: 0.03em; }
+
+  /* ── Share Week button ── */
+  .share-week-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px; margin-top: 16px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text-dim);
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .share-week-btn:active { color: var(--gold); border-color: var(--gold-dim); }
+
+  /* ── Unlock badges & theme toggle ── */
+  .unlock-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(200,169,110,0.08); border: 1px solid rgba(200,169,110,0.3);
+    border-radius: 8px; padding: 5px 10px;
+    font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em;
+  }
+  .unlock-locked {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--text-mute);
+    border-radius: 8px; padding: 5px 10px;
+    font-size: 11px; font-weight: 600; color: var(--text-mute); letter-spacing: 0.06em;
+  }
+  .theme-toggle-btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 16px; width: 100%;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text-dim);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent; margin-top: 8px;
+  }
+  .theme-toggle-btn:active { color: var(--gold); border-color: var(--gold-dim); }
+
+  /* ── Boss record stats ── */
+  .boss-record { display: flex; gap: 24px; padding: 4px 0; }
+  .boss-record-stat { text-align: center; }
+  .boss-record-val  { font-size: 28px; font-weight: 800; line-height: 1; }
+  .boss-record-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-mute); margin-top: 2px;
+  }
+
+  /* ── Milestone line ── */
+  .milestone-line { font-size: 10px; color: var(--text-mute); letter-spacing: 0.03em; margin-top: 2px; }
+  .milestone-line .ms-hit { color: var(--gold); font-weight: 700; }
+  .banner-40-line {
+    font-size: 9px; font-weight: 900; letter-spacing: 0.22em;
+    color: var(--gold); text-shadow: 0 0 8px rgba(200,169,110,0.7);
+    margin-top: 2px; transition: opacity 0.5s; opacity: 0;
+  }
+  .banner-40-line.visible { opacity: 1; }
+
+  /* ── Ember theme (unlocked at 25 coins) ── */
+  .theme-ember {
+    --bg: #0d0908; --surface: rgba(240,100,40,0.04); --surface2: rgba(240,100,40,0.07);
+    --border: rgba(220,110,50,0.15); --gold: #e07840;
+    --gold-dim: rgba(220,110,50,0.4); --gold-faint: rgba(220,110,50,0.08);
+    --text: #f2e8de; --text-dim: #8a6050; --text-mute: #3d2018;
+  }
 </style>
 </head>
 <body>
@@ -551,7 +701,16 @@
   <div class="celebration-box">
     <span class="celebration-emoji">🎉</span>
     <div class="celebration-text">Perfect Day!</div>
-    <div class="celebration-sub">All 7 goals crushed.</div>
+    <div class="celebration-sub" id="celebration-sub">All 7 goals crushed.</div>
+  </div>
+</div>
+
+<!-- Level-up overlay -->
+<div id="levelup-overlay">
+  <div class="levelup-box">
+    <span class="levelup-emoji">⚡</span>
+    <div class="levelup-sub">Level Up!</div>
+    <div class="levelup-name" id="levelup-name">Machine</div>
   </div>
 </div>
 
@@ -576,6 +735,8 @@
     <div class="countdown-badge">
       <div class="countdown-days" id="countdown-days">—</div>
       <div class="countdown-label">days to 40</div>
+      <div class="banner-40-line" id="banner-40">✦ THE 40 ✦</div>
+      <div class="milestone-line" id="milestone-line"></div>
     </div>
   </div>
   <div class="date-nav">
@@ -600,6 +761,8 @@
       </div>
     </div>
   </div>
+
+  <div id="gamification-bar"></div>
 
   <div class="goal-group-label">Morning habits</div>
   <div id="goals-morning"></div>
@@ -634,6 +797,14 @@
     <table class="week-table" id="week-table"></table>
   </div>
   <div class="week-scores" id="week-scores"></div>
+  <button class="share-week-btn" onclick="shareWeek()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+      <polyline points="16 6 12 2 8 6"/>
+      <line x1="12" y1="2" x2="12" y2="15"/>
+    </svg>
+    Share Week
+  </button>
 </div>
 
 <!-- Summary tab -->
@@ -675,9 +846,30 @@ const GOALS = [
   { id: "nutrition",  label: "Nutrition",           sub: "on plan",            icon: "🥗", group: "challenge" },
 ];
 
-const BIRTHDAY = new Date(2026, 8, 28);
+const BIRTHDAY       = new Date(2026, 8, 28);
+const JOURNEY_START  = new Date(2026, 3, 15); // Apr 15
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+// ── Gamification constants ──
+const LEVELS = [
+  { name: "Couch Potato",    minXP: 0    },
+  { name: "Weekend Warrior", minXP: 500  },
+  { name: "Contender",       minXP: 1500 },
+  { name: "Machine",         minXP: 4000 },
+  { name: "Legend",          minXP: 8000 },
+];
+const MILESTONES = [150, 100, 50, 25, 10];
+const TRASH_TALK = [
+  "Zero perfect days. Your couch filed a missing persons report.",
+  "One perfect day. You technically exist.",
+  "Two perfect days. Clinically present. Aggressively average.",
+  "Three perfect days. The BMI of effort. Not bad. Not good.",
+  "Four perfect days. A participation trophy is incoming.",
+  "Five perfect days. Legitimately solid. Don't ruin it.",
+  "Six perfect days. One slip. We both know it wasn't worth it.",
+  "Seven perfect days. Perfect week. We are NOT the same.",
+];
 
 let data = {};
 let currentDate = new Date();
@@ -701,6 +893,221 @@ function currentStreak(goalId) {
     else break;
   }
   return streak;
+}
+
+// ── XP & Level ──
+function isBossDay(dateKey) {
+  const [y, m, d] = dateKey.split("-").map(Number);
+  return new Date(y, m - 1, d).getDay() === 0; // Sunday
+}
+
+function streakLengthAt(dateKey) {
+  // Consecutive days ending at dateKey with score > 0
+  const [y, m, d] = dateKey.split("-").map(Number);
+  const anchor = new Date(y, m - 1, d);
+  let streak = 0;
+  const cur = new Date(anchor);
+  for (let i = 0; i < 400; i++) {
+    if (getScore(toKey(cur)) > 0) { streak++; cur.setDate(cur.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function xpMultiplier(streak) {
+  if (streak >= 30) return 3;
+  if (streak >= 7)  return 2;
+  if (streak >= 3)  return 1.5;
+  return 1;
+}
+
+function xpForDay(dateKey) {
+  const score = getScore(dateKey);
+  if (score === 0) return 0;
+  const base   = score * 10 + (score === GOALS.length ? 50 : 0);
+  const streak = streakLengthAt(dateKey);
+  const mult   = xpMultiplier(streak);
+  const boss   = (isBossDay(dateKey) && score === GOALS.length) ? 2 : 1;
+  return Math.floor(base * mult * boss);
+}
+
+function computeTotalXP() {
+  return Object.keys(data).reduce((sum, k) => sum + xpForDay(k), 0);
+}
+
+function getLevelInfo(xp) {
+  let idx = 0;
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= LEVELS[i].minXP) { idx = i; break; }
+  }
+  const lvl  = LEVELS[idx];
+  const next = LEVELS[idx + 1];
+  const xpIn = xp - lvl.minXP;
+  const xpFor = next ? next.minXP - lvl.minXP : 1;
+  const pct  = next ? Math.min(100, Math.floor(100 * xpIn / xpFor)) : 100;
+  return { idx: idx + 1, name: lvl.name, xp, xpInLevel: xpIn, xpForLevel: xpFor, pct, nextName: next?.name || null, isMax: !next };
+}
+
+// ── Hardly Coins ──
+function computeCoins() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let coins = 0;
+  Object.keys(data).sort().forEach(k => {
+    const [y, m, d] = k.split("-").map(Number);
+    if (new Date(y, m - 1, d) > today) return;
+    const score = getScore(k);
+    if (score === GOALS.length) { coins++; }                           // perfect day: +1
+    else if (isBossDay(k) && score > 0) { coins = Math.max(0, coins - 1); } // boss loss: -1
+  });
+  return coins;
+}
+
+// ── Boss Day record ──
+function getBossRecord() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  let wins = 0, losses = 0;
+  Object.keys(data).forEach(k => {
+    if (!isBossDay(k)) return;
+    const [y, m, d] = k.split("-").map(Number);
+    if (new Date(y, m - 1, d) > today) return;
+    const score = getScore(k);
+    if (score > 0) { score === GOALS.length ? wins++ : losses++; }
+  });
+  return { wins, losses };
+}
+
+// ── Current Form ──
+function getFormRating() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const scores = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const k = toKey(d);
+    if (data[k]) scores.push(getScore(k));
+  }
+  if (!scores.length) return { label: "Cold",       cls: "form-cold",    emoji: "🥶" };
+  const avg = scores.reduce((s, x) => s + x, 0) / scores.length;
+  if (avg >= 6)   return { label: "Peak",       cls: "form-peak",    emoji: "🔱" };
+  if (avg >= 4.5) return { label: "On Fire",    cls: "form-on-fire", emoji: "🔥" };
+  if (avg >= 3)   return { label: "In Form",    cls: "form-in-form", emoji: "✅" };
+  if (avg >= 1.5) return { label: "Warming Up", cls: "form-warming", emoji: "🌡️" };
+  return { label: "Cold", cls: "form-cold", emoji: "🥶" };
+}
+
+// ── Milestones ──
+function getNextMilestone(daysLeft) {
+  for (const ms of MILESTONES) {
+    if (daysLeft > ms) return { ms, inDays: daysLeft - ms };
+  }
+  return null;
+}
+
+// ── Theme ──
+function getTheme()   { return localStorage.getItem("p40_theme") || "default"; }
+function applyTheme() {
+  document.documentElement.classList.toggle("theme-ember", getTheme() === "ember");
+}
+function toggleTheme() {
+  const next = getTheme() === "ember" ? "default" : "ember";
+  localStorage.setItem("p40_theme", next);
+  applyTheme();
+  if (activeTab === "summary") renderSummary();
+}
+
+// ── Gamification render ──
+function renderGamificationBar() {
+  const el = document.getElementById("gamification-bar");
+  if (!el) return;
+  const xp    = computeTotalXP();
+  const lvl   = getLevelInfo(xp);
+  const coins = computeCoins();
+  const form  = getFormRating();
+  const key   = toKey(currentDate);
+  const isSun = currentDate.getDay() === 0;
+  const isTod = isToday(currentDate);
+
+  // Boss day banner (shown today + on any Sunday we're viewing)
+  let bossBanner = "";
+  if (isSun) {
+    const score = getScore(key);
+    const won   = isTod ? score === GOALS.length : (data[key] && score === GOALS.length);
+    const lost  = isBossDay(key) && data[key] && score > 0 && score < GOALS.length && !isTod;
+    const desc  = won  ? `<span style="color:var(--green)">⚔️ Boss defeated — double XP earned!</span>`
+                : lost ? `<span style="color:var(--red)">Defeated — lost 1 Hardly Coin</span>`
+                       : `Need 7/7 to defeat — win = 2× XP, lose = −1 coin`;
+    bossBanner = `<div class="boss-day-banner">
+      <div class="boss-emoji">${won ? "🏆" : "👹"}</div>
+      <div class="boss-info">
+        <div class="boss-title">Boss Day</div>
+        <div class="boss-desc">${desc}</div>
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = `
+    ${bossBanner}
+    <div class="xp-section">
+      <div class="level-coin-row">
+        <div class="level-badge">
+          <span class="level-name-text">${lvl.name}</span>
+          <span class="level-num-chip">LV ${lvl.idx}</span>
+        </div>
+        <div class="coin-badge">🪙 ${coins}</div>
+      </div>
+      <div class="xp-bar-row">
+        <span class="xp-count">${xp.toLocaleString()} XP</span>
+        <div class="xp-bar-bg"><div class="xp-bar-fill" style="width:${lvl.pct}%"></div></div>
+        <span class="xp-next">${lvl.isMax ? "MAX" : lvl.nextName}</span>
+      </div>
+      <div class="form-row">
+        <span class="form-pill ${form.cls}">${form.emoji} ${form.label}</span>
+        <span style="font-size:10px;color:var(--text-mute)">Last 7 days</span>
+      </div>
+    </div>`;
+}
+
+// ── Level-up animation ──
+function showLevelUp(levelName) {
+  const el = document.getElementById("levelup-overlay");
+  if (!el) return;
+  document.getElementById("levelup-name").textContent = levelName;
+  el.classList.remove("show");
+  void el.offsetWidth;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 3100);
+}
+
+// ── Share Week ──
+function buildShareMessage() {
+  const ws   = getWeekStart(weekOffset);
+  const we   = new Date(ws); we.setDate(we.getDate() + 6);
+  const days = Array.from({length:7}, (_, i) => { const d = new Date(ws); d.setDate(d.getDate() + i); return d; });
+  const perfectDays = days.filter(d => getScore(toKey(d)) === GOALS.length).length;
+  const daysToGo    = Math.max(0, Math.ceil((BIRTHDAY - new Date()) / 86400000));
+  const xp          = computeTotalXP();
+  const lvl         = getLevelInfo(xp);
+  const coins       = computeCoins();
+  const form        = getFormRating();
+  const bestStreak  = Math.max(...GOALS.map(g => currentStreak(g.id)));
+  const fmt = d => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  const talk = TRASH_TALK[Math.min(perfectDays, 7)];
+  return [
+    `📅 Week of ${fmt(ws)} – ${fmt(we)}`,
+    `━━━━━━━━━━━━━━━━━━`,
+    `💎 ${perfectDays}/7 perfect days`,
+    `🔥 Best streak: ${bestStreak} day${bestStreak !== 1 ? "s" : ""}`,
+    `⚡ Lv ${lvl.idx} ${lvl.name} · ${xp.toLocaleString()} XP`,
+    `🪙 ${coins} Hardly Coin${coins !== 1 ? "s" : ""}`,
+    `${form.emoji} Form: ${form.label}`,
+    `🎯 ${daysToGo} days to 40`,
+    ``,
+    `"${talk}"`,
+    ``,
+    `project-40-hardly.vercel.app`,
+  ].join("\n");
+}
+function shareWeek() {
+  window.location.href = `sms:?body=${encodeURIComponent(buildShareMessage())}`;
 }
 
 // ── Sync ──
@@ -787,6 +1194,26 @@ function saveSyncToken() {
 function updateCountdown() {
   const diff = Math.ceil((BIRTHDAY - new Date()) / 86400000);
   document.getElementById("countdown-days").textContent = diff > 0 ? diff : "🎉";
+
+  // Milestone line
+  const msEl = document.getElementById("milestone-line");
+  if (msEl && diff > 0) {
+    // Check if we just hit one (within ±2 days)
+    const hitMs = MILESTONES.find(ms => Math.abs(diff - ms) <= 2);
+    if (hitMs) {
+      msEl.innerHTML = `<span class="ms-hit">✦ ${hitMs}-day milestone!</span>`;
+    } else {
+      const next = getNextMilestone(diff);
+      msEl.textContent = next ? `next milestone: ${next.ms} days (in ${next.inDays})` : "";
+    }
+  }
+
+  // 40 banner (50 coins unlock)
+  const bannerEl = document.getElementById("banner-40");
+  if (bannerEl) {
+    const coins = computeCoins();
+    bannerEl.classList.toggle("visible", coins >= 50);
+  }
 }
 
 // ── Date nav ──
@@ -828,7 +1255,9 @@ function renderGoals() {
     GOALS.filter(g => g.group === group).forEach(goal => {
       const checked = !!day[goal.id];
       const streak  = currentStreak(goal.id);
-      const fire    = streak >= 3
+      const fire    = streak >= 7
+        ? `<span style="font-size:16px;line-height:1;filter:drop-shadow(0 0 4px #fc4)" title="${streak}-day streak 🔥🔥">🔥</span>`
+        : streak >= 3
         ? `<span style="font-size:13px;line-height:1" title="${streak}-day streak">🔥</span>`
         : "";
       const stravaChecked = data[key]?.strava_checked || [];
@@ -856,12 +1285,27 @@ function renderGoals() {
 
 function toggleGoal(key, goalId) {
   const prevScore = getScore(key);
+  const prevXP    = computeTotalXP();
+  const prevLevel = getLevelInfo(prevXP).idx;
+
   if (!data[key]) data[key] = {};
   data[key][goalId] = !data[key][goalId];
   save();
-  if (getScore(key) === GOALS.length && prevScore < GOALS.length && isToday(currentDate)) {
+
+  const newScore = getScore(key);
+  if (newScore === GOALS.length && prevScore < GOALS.length && isToday(currentDate)) {
+    const coins = computeCoins();
+    const isBoss = isBossDay(key);
+    const sub = document.getElementById("celebration-sub");
+    if (sub) sub.textContent = isBoss ? "Boss defeated! 2× XP earned. 🏆" : `+1 Hardly Coin (${coins} total) 🪙`;
     showCelebration();
   }
+
+  // Level-up check
+  const newXP    = computeTotalXP();
+  const newLevel = getLevelInfo(newXP);
+  if (newLevel.idx > prevLevel) showLevelUp(newLevel.name);
+
   renderToday();
 }
 
@@ -892,6 +1336,7 @@ function renderToday() {
   renderGoals();
   updateRing();
   updateInputs();
+  renderGamificationBar();
 }
 
 // ── Week view ──
@@ -958,8 +1403,7 @@ function jumpToDay(key) {
 
 // ── Contribution graph ──
 function renderContribGraph() {
-  const JOURNEY_START = new Date(2026, 3, 15); // Apr 15
-  const JOURNEY_END   = new Date(2026, 8, 28); // Sep 28
+  const JOURNEY_END = new Date(2026, 8, 28); // Sep 28
   const today         = new Date();
   today.setHours(0,0,0,0);
 
@@ -1093,7 +1537,6 @@ function initContribTooltip() {
   // Scroll to show today
   const today = new Date();
   today.setHours(0,0,0,0);
-  const JOURNEY_START = new Date(2026, 3, 15);
   const startMon = new Date(JOURNEY_START);
   const dow = startMon.getDay();
   startMon.setDate(startMon.getDate() + ((dow === 0) ? -6 : 1 - dow));
@@ -1186,7 +1629,6 @@ function renderWeightChart(allKeys) {
 function renderSummary() {
   const allKeys = Object.keys(data).sort();
 
-  // Always render the contribution graph — it shows the full journey
   if (!allKeys.length) {
     document.getElementById("summary-content").innerHTML = `
       <div class="summary-card">
@@ -1202,11 +1644,43 @@ function renderSummary() {
   const totalChecks  = allKeys.reduce((s,k) => s + getScore(k), 0);
   const perfectDays  = allKeys.filter(k => getScore(k) === GOALS.length).length;
   const overallPct   = Math.round(100 * totalChecks / (totalDays * GOALS.length));
-
-  const journeyStart = new Date(2026, 3, 15);
   const daysToGo     = Math.max(0, Math.ceil((BIRTHDAY - today) / 86400000));
-  const totalJourney = Math.ceil((BIRTHDAY - journeyStart) / 86400000);
-  const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - journeyStart) / 86400000)) / totalJourney));
+  const totalJourney = Math.ceil((BIRTHDAY - JOURNEY_START) / 86400000);
+  const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - JOURNEY_START) / 86400000)) / totalJourney));
+
+  // Gamification
+  const xp     = computeTotalXP();
+  const lvl    = getLevelInfo(xp);
+  const coins  = computeCoins();
+  const form   = getFormRating();
+  const boss   = getBossRecord();
+  const theme  = getTheme();
+
+  // Unlock badge rows
+  const badge10  = coins >= 10;
+  const badge25  = coins >= 25;
+  const badge50  = coins >= 50;
+  const unlocksHtml = `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+      <span class="${badge10 ? "unlock-badge" : "unlock-locked"}">🏅 Contender Badge ${badge10 ? "" : "· 10 coins"}</span>
+      <span class="${badge25 ? "unlock-badge" : "unlock-locked"}">🔥 Ember Theme ${badge25 ? "" : "· 25 coins"}</span>
+      <span class="${badge50 ? "unlock-badge" : "unlock-locked"}">✦ The 40 Banner ${badge50 ? "" : "· 50 coins"}</span>
+    </div>
+    ${badge25 ? `<button class="theme-toggle-btn" onclick="toggleTheme()">
+      ${theme === "ember" ? "🌑 Switch to Default Theme" : "🔥 Switch to Ember Theme"}
+    </button>` : ""}`;
+
+  // Upcoming milestone
+  const nextMs = getNextMilestone(daysToGo);
+  const milestoneHtml = nextMs
+    ? `<div class="summary-stat-row">
+         <span class="summary-stat-label">Next milestone</span>
+         <span class="summary-stat-val">${nextMs.ms} days <span style="color:var(--text-dim);font-weight:400;font-size:12px">(in ${nextMs.inDays} days)</span></span>
+       </div>`
+    : `<div class="summary-stat-row">
+         <span class="summary-stat-label">All milestones</span>
+         <span class="summary-stat-val gold">Cleared ✓</span>
+       </div>`;
 
   document.getElementById("summary-content").innerHTML = `
     <div class="summary-card">
@@ -1228,12 +1702,63 @@ function renderSummary() {
         <span class="summary-stat-label">Goal completion</span>
         <span class="summary-stat-val gold">${overallPct}%</span>
       </div>
+      ${milestoneHtml}
       <div class="progress-bar-wrap">
         <div class="progress-bar-label"><span>Journey to 40</span><span>${journeyPct}%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${journeyPct}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-mute);margin-top:4px">
           <span>Apr 15</span><span>${daysToGo} days left</span><span>Sep 28</span>
         </div>
+      </div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">Gamification</div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Level</span>
+        <span class="summary-stat-val gold">Lv ${lvl.idx} — ${lvl.name}</span>
+      </div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Total XP</span>
+        <span class="summary-stat-val">${xp.toLocaleString()}</span>
+      </div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Hardly Coins</span>
+        <span class="summary-stat-val gold">🪙 ${coins}</span>
+      </div>
+      <div class="summary-stat-row">
+        <span class="summary-stat-label">Current Form</span>
+        <span class="summary-stat-val"><span class="form-pill ${form.cls}" style="font-size:11px">${form.emoji} ${form.label}</span></span>
+      </div>
+      <div class="progress-bar-wrap" style="margin-top:10px">
+        <div class="progress-bar-label">
+          <span>${lvl.name} → ${lvl.isMax ? "MAX" : lvl.nextName}</span>
+          <span>${lvl.pct}%</span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${lvl.pct}%"></div></div>
+      </div>
+      ${badge10 ? `<div style="margin-top:12px"><span class="unlock-badge">🏅 Contender</span></div>` : ""}
+      <div style="margin-top:10px">${unlocksHtml}</div>
+    </div>
+
+    <div class="summary-card">
+      <div class="summary-card-title">Boss Days 👹</div>
+      <div class="boss-record">
+        <div class="boss-record-stat">
+          <div class="boss-record-val" style="color:var(--green)">${boss.wins}</div>
+          <div class="boss-record-label">Wins</div>
+        </div>
+        <div class="boss-record-stat">
+          <div class="boss-record-val" style="color:var(--red)">${boss.losses}</div>
+          <div class="boss-record-label">Losses</div>
+        </div>
+        <div class="boss-record-stat">
+          <div class="boss-record-val" style="color:var(--text-dim)">${boss.wins + boss.losses}</div>
+          <div class="boss-record-label">Total</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-mute);margin-top:8px">
+        Every Sunday. Win with 7/7 for double XP. Lose with a partial day = −1 coin.
       </div>
     </div>
 
@@ -1246,7 +1771,7 @@ function renderSummary() {
       <div class="summary-card-title">Current streaks</div>
       ${GOALS.map(g => {
         const s    = currentStreak(g.id);
-        const fire = s >= 3 ? " 🔥" : "";
+        const fire = s >= 7 ? " 🔥🔥" : s >= 3 ? " 🔥" : "";
         return `<div class="streak-row">
           <div class="streak-icon">${g.icon}</div>
           <div class="streak-name">${g.label}</div>
@@ -1476,6 +2001,7 @@ function stravaAutoSync() {
 
 // ── Init ──
 load();
+applyTheme();
 updateCountdown();
 
 // Handle Strava OAuth callback (?code=... in URL after redirect)
