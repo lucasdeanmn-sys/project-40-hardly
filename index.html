@@ -1360,15 +1360,16 @@ async function stravaSyncToday() {
     const activities = await res.json();
     if (!data[key]) data[key] = {};
 
+    const longActs  = activities.filter(a => (a.moving_time || a.elapsed_time || 0) >= 1800);
+    const shortActs = activities.filter(a => (a.moving_time || a.elapsed_time || 0) < 1800);
+    // outside = at least one 30-min+ activity
+    // additional = a separate activity beyond what already counted for outside
+    const hasOutside    = longActs.length > 0;
+    const hasAdditional = shortActs.length > 0 || longActs.length > 1;
+
     const checked = [];
-    if (activities.some(a => (a.moving_time || a.elapsed_time || 0) >= 1800)) {
-      data[key].outside = true;
-      checked.push("outside");
-    }
-    if (activities.length > 0) {
-      data[key].additional = true;
-      checked.push("additional");
-    }
+    if (hasOutside)    { data[key].outside    = true; checked.push("outside"); }
+    if (hasAdditional) { data[key].additional = true; checked.push("additional"); }
     data[key].strava_checked       = checked;
     data[key].strava_synced_at     = Date.now();
     data[key].strava_activity_count = activities.length;
