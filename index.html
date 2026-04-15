@@ -682,6 +682,31 @@
   }
   .banner-40-line.visible { opacity: 1; }
 
+  /* ── Bonus goals ── */
+  .bonus-section-label {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .bonus-label-xp {
+    font-size: 9px; font-weight: 700; color: var(--gold);
+    background: var(--gold-faint); border-radius: 4px;
+    padding: 2px 6px; letter-spacing: 0.04em; text-transform: none;
+  }
+  .goal-card.bonus-goal { opacity: 0.88; }
+  .goal-card.bonus-goal .goal-check { border-color: rgba(200,169,110,0.3); }
+  .goal-card.bonus-checked {
+    background: var(--gold-faint);
+    border-color: rgba(200,169,110,0.25);
+  }
+  .goal-card.bonus-checked .goal-check {
+    background: var(--gold); border-color: var(--gold);
+  }
+  .bonus-xp-chip {
+    font-size: 10px; font-weight: 700; color: var(--gold);
+    background: rgba(200,169,110,0.12);
+    border-radius: 5px; padding: 2px 6px;
+    flex-shrink: 0; margin-left: auto;
+  }
+
   /* ── Ember theme (unlocked at 25 coins) ── */
   .theme-ember {
     --bg: #0d0908; --surface: rgba(240,100,40,0.04); --surface2: rgba(240,100,40,0.07);
@@ -701,7 +726,7 @@
   <div class="celebration-box">
     <span class="celebration-emoji">🎉</span>
     <div class="celebration-text">Perfect Day!</div>
-    <div class="celebration-sub" id="celebration-sub">All 7 goals crushed.</div>
+    <div class="celebration-sub" id="celebration-sub">All 3 core goals hit! 🎯</div>
   </div>
 </div>
 
@@ -757,18 +782,20 @@
       </svg>
       <div class="ring-text">
         <div class="ring-score" id="ring-score">0</div>
-        <div class="ring-total">/ 7</div>
+        <div class="ring-total">/ 3</div>
       </div>
     </div>
   </div>
 
   <div id="gamification-bar"></div>
 
-  <div class="goal-group-label">Morning habits</div>
-  <div id="goals-morning"></div>
+  <div class="goal-group-label">Core Goals</div>
+  <div id="goals-core"></div>
 
-  <div class="goal-group-label">Challenge goals</div>
-  <div id="goals-challenge"></div>
+  <div class="goal-group-label bonus-section-label">
+    Bonus <span class="bonus-label-xp">⭐ +5 XP each</span>
+  </div>
+  <div id="goals-bonus"></div>
 
   <div class="field-group">
     <div class="field-label">Weight (lbs)</div>
@@ -837,14 +864,19 @@
 <script>
 const STORAGE_KEY = "project40hardly_v1";
 const GOALS = [
-  { id: "walk",       label: "Morning Walk",       sub: "10–30 min",          icon: "🚶", group: "morning"   },
-  { id: "stretch",    label: "Morning Stretch",     sub: "2–3 min",            icon: "🧘", group: "morning"   },
-  { id: "pushups",    label: "Pushups",             sub: "after peeing",       icon: "💪", group: "morning"   },
-  { id: "outside",    label: "Outside Exercise",    sub: "30 min minimum",     icon: "🏃", group: "challenge" },
-  { id: "additional", label: "Additional Exercise", sub: "strength/core/yoga", icon: "🏋️", group: "challenge" },
-  { id: "reading",    label: "Read Non-Fiction",    sub: "10+ pages",          icon: "📖", group: "challenge" },
-  { id: "nutrition",  label: "Nutrition",           sub: "on plan",            icon: "🥗", group: "challenge" },
+  // Core — drive the ring, streaks, coins, Boss Days
+  { id: "coach",     label: "Coach Workout",    sub: "prescribed training",               icon: "🏋️", group: "core"  },
+  { id: "nutrition", label: "Nutrition",        sub: "on plan",                           icon: "🥗", group: "core"  },
+  { id: "reading",   label: "Read",             sub: "fiction or non-fiction, 10+ pages", icon: "📖", group: "core"  },
+  // Bonus — celebrated, never penalised
+  { id: "walk",      label: "Morning Walk",     sub: "outside time",                      icon: "🚶", group: "bonus" },
+  { id: "yoga",      label: "Yoga / Stretching",sub: "morning or night",                  icon: "🧘", group: "bonus" },
+  { id: "pushups",   label: "Pee Pushups",      sub: "every time",                        icon: "💪", group: "bonus" },
+  { id: "core_work", label: "Core Work",        sub: "planks, abs, etc.",                 icon: "🦾", group: "bonus" },
 ];
+const CORE_GOALS  = GOALS.filter(g => g.group === "core");
+const BONUS_GOALS = GOALS.filter(g => g.group === "bonus");
+const CORE_COUNT  = CORE_GOALS.length; // 3
 
 const BIRTHDAY       = new Date(2026, 8, 28);
 const JOURNEY_START  = new Date(2026, 3, 15); // Apr 15
@@ -881,8 +913,9 @@ function toKey(d) {
 }
 function todayKey() { return toKey(new Date()); }
 function isToday(d) { return toKey(d) === todayKey(); }
-function getDay(key) { return data[key] || {}; }
-function getScore(key) { return GOALS.filter(g => data[key]?.[g.id]).length; }
+function getDay(key)       { return data[key] || {}; }
+function getScore(key)     { return CORE_GOALS.filter(g => data[key]?.[g.id]).length; }   // 0–3 core
+function getBonusScore(key){ return BONUS_GOALS.filter(g => data[key]?.[g.id]).length; }  // 0–4 bonus
 
 // ── Streaks ──
 function currentStreak(goalId) {
@@ -922,13 +955,15 @@ function xpMultiplier(streak) {
 }
 
 function xpForDay(dateKey) {
-  const score = getScore(dateKey);
-  if (score === 0) return 0;
-  const base   = score * 10 + (score === GOALS.length ? 50 : 0);
+  const coreScore  = getScore(dateKey);
+  const bonusScore = getBonusScore(dateKey);
+  if (coreScore === 0 && bonusScore === 0) return 0;
+  const coreBase  = coreScore * 10 + (coreScore === CORE_COUNT ? 50 : 0); // max 80
+  const bonusBase = bonusScore * 5;                                        // max 20 (⭐ bonus)
   const streak = streakLengthAt(dateKey);
   const mult   = xpMultiplier(streak);
-  const boss   = (isBossDay(dateKey) && score === GOALS.length) ? 2 : 1;
-  return Math.floor(base * mult * boss);
+  const boss   = (isBossDay(dateKey) && coreScore === CORE_COUNT) ? 2 : 1;
+  return Math.floor((coreBase + bonusBase) * mult * boss);
 }
 
 function computeTotalXP() {
@@ -956,8 +991,8 @@ function computeCoins() {
     const [y, m, d] = k.split("-").map(Number);
     if (new Date(y, m - 1, d) > today) return;
     const score = getScore(k);
-    if (score === GOALS.length) { coins++; }                           // perfect day: +1
-    else if (isBossDay(k) && score > 0) { coins = Math.max(0, coins - 1); } // boss loss: -1
+    if (score === CORE_COUNT) { coins++; }                               // 3/3 core: +1 coin
+    else if (isBossDay(k) && score > 0) { coins = Math.max(0, coins - 1); } // boss loss: −1 coin
   });
   return coins;
 }
@@ -971,7 +1006,7 @@ function getBossRecord() {
     const [y, m, d] = k.split("-").map(Number);
     if (new Date(y, m - 1, d) > today) return;
     const score = getScore(k);
-    if (score > 0) { score === GOALS.length ? wins++ : losses++; }
+    if (score > 0) { score === CORE_COUNT ? wins++ : losses++; }
   });
   return { wins, losses };
 }
@@ -986,11 +1021,12 @@ function getFormRating() {
     if (data[k]) scores.push(getScore(k));
   }
   if (!scores.length) return { label: "Cold",       cls: "form-cold",    emoji: "🥶" };
-  const avg = scores.reduce((s, x) => s + x, 0) / scores.length;
-  if (avg >= 6)   return { label: "Peak",       cls: "form-peak",    emoji: "🔱" };
-  if (avg >= 4.5) return { label: "On Fire",    cls: "form-on-fire", emoji: "🔥" };
-  if (avg >= 3)   return { label: "In Form",    cls: "form-in-form", emoji: "✅" };
-  if (avg >= 1.5) return { label: "Warming Up", cls: "form-warming", emoji: "🌡️" };
+  // Form based on core completion rate (0–1 scale)
+  const pct = (scores.reduce((s, x) => s + x, 0) / scores.length) / CORE_COUNT;
+  if (pct >= 1)    return { label: "Peak",       cls: "form-peak",    emoji: "🔱" };
+  if (pct >= 0.75) return { label: "On Fire",    cls: "form-on-fire", emoji: "🔥" };
+  if (pct >= 0.5)  return { label: "In Form",    cls: "form-in-form", emoji: "✅" };
+  if (pct >= 0.25) return { label: "Warming Up", cls: "form-warming", emoji: "🌡️" };
   return { label: "Cold", cls: "form-cold", emoji: "🥶" };
 }
 
@@ -1030,11 +1066,11 @@ function renderGamificationBar() {
   let bossBanner = "";
   if (isSun) {
     const score = getScore(key);
-    const won   = isTod ? score === GOALS.length : (data[key] && score === GOALS.length);
-    const lost  = isBossDay(key) && data[key] && score > 0 && score < GOALS.length && !isTod;
+    const won   = isTod ? score === CORE_COUNT : (data[key] && score === CORE_COUNT);
+    const lost  = isBossDay(key) && data[key] && score > 0 && score < CORE_COUNT && !isTod;
     const desc  = won  ? `<span style="color:var(--green)">⚔️ Boss defeated — double XP earned!</span>`
                 : lost ? `<span style="color:var(--red)">Defeated — lost 1 Hardly Coin</span>`
-                       : `Need 7/7 to defeat — win = 2× XP, lose = −1 coin`;
+                       : `Need 3/3 core goals to defeat — win = 2× XP, lose = −1 coin`;
     bossBanner = `<div class="boss-day-banner">
       <div class="boss-emoji">${won ? "🏆" : "👹"}</div>
       <div class="boss-info">
@@ -1082,20 +1118,22 @@ function buildShareMessage() {
   const ws   = getWeekStart(weekOffset);
   const we   = new Date(ws); we.setDate(we.getDate() + 6);
   const days = Array.from({length:7}, (_, i) => { const d = new Date(ws); d.setDate(d.getDate() + i); return d; });
-  const perfectDays = days.filter(d => getScore(toKey(d)) === GOALS.length).length;
+  const perfectDays    = days.filter(d => getScore(toKey(d)) === CORE_COUNT).length;
+  const totalBonusHits = days.reduce((s, d) => s + getBonusScore(toKey(d)), 0);
   const daysToGo    = Math.max(0, Math.ceil((BIRTHDAY - new Date()) / 86400000));
   const xp          = computeTotalXP();
   const lvl         = getLevelInfo(xp);
   const coins       = computeCoins();
   const form        = getFormRating();
-  const bestStreak  = Math.max(...GOALS.map(g => currentStreak(g.id)));
+  const bestStreak  = Math.max(...CORE_GOALS.map(g => currentStreak(g.id)));
   const fmt = d => `${MONTHS[d.getMonth()]} ${d.getDate()}`;
   const talk = TRASH_TALK[Math.min(perfectDays, 7)];
   return [
     `📅 Week of ${fmt(ws)} – ${fmt(we)}`,
     `━━━━━━━━━━━━━━━━━━`,
-    `💎 ${perfectDays}/7 perfect days`,
-    `🔥 Best streak: ${bestStreak} day${bestStreak !== 1 ? "s" : ""}`,
+    `🎯 ${perfectDays}/7 perfect days (3/3 core)`,
+    totalBonusHits > 0 ? `⭐ ${totalBonusHits} bonus goals hit` : null,
+    `🔥 Best core streak: ${bestStreak} day${bestStreak !== 1 ? "s" : ""}`,
     `⚡ Lv ${lvl.idx} ${lvl.name} · ${xp.toLocaleString()} XP`,
     `🪙 ${coins} Hardly Coin${coins !== 1 ? "s" : ""}`,
     `${form.emoji} Form: ${form.label}`,
@@ -1104,7 +1142,7 @@ function buildShareMessage() {
     `"${talk}"`,
     ``,
     `project-40-hardly.vercel.app`,
-  ].join("\n");
+  ].filter(l => l !== null).join("\n");
 }
 function shareWeek() {
   window.location.href = `sms:?body=${encodeURIComponent(buildShareMessage())}`;
@@ -1246,41 +1284,59 @@ function showCelebration() {
 }
 
 // ── Goal rendering ──
+function makeGoalCard(goal, key, isBonus) {
+  const checked = !!data[key]?.[goal.id];
+  const streak  = currentStreak(goal.id);
+  const fire    = streak >= 7
+    ? `<span style="font-size:16px;line-height:1;filter:drop-shadow(0 0 4px #fc4)" title="${streak}-day streak">🔥</span>`
+    : streak >= 3
+    ? `<span style="font-size:13px;line-height:1" title="${streak}-day streak">🔥</span>`
+    : "";
+  const stravaPin = (data[key]?.strava_checked || []).includes(goal.id)
+    ? `<span class="strava-goal-dot" title="Auto-checked by Strava"></span>`
+    : "";
+
+  const card = document.createElement("div");
+  if (isBonus) {
+    card.className = "goal-card bonus-goal" + (checked ? " bonus-checked" : "");
+    card.innerHTML = `
+      <div class="goal-icon">${goal.icon}</div>
+      <div class="goal-text">
+        <div class="goal-label">${goal.label}${fire}${stravaPin}</div>
+        <div class="goal-sub">${goal.sub}</div>
+      </div>
+      ${checked ? '<span class="bonus-xp-chip">⭐ +5</span>' : ""}
+      <div class="goal-check">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,7 6,11 12,3"/>
+        </svg>
+      </div>`;
+  } else {
+    card.className = "goal-card" + (checked ? " checked" : "");
+    card.innerHTML = `
+      <div class="goal-icon">${goal.icon}</div>
+      <div class="goal-text">
+        <div class="goal-label">${goal.label}${fire}${stravaPin}</div>
+        <div class="goal-sub">${goal.sub}</div>
+      </div>
+      <div class="goal-check">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,7 6,11 12,3"/>
+        </svg>
+      </div>`;
+  }
+  card.onclick = () => toggleGoal(key, goal.id);
+  return card;
+}
+
 function renderGoals() {
   const key = toKey(currentDate);
-  const day = getDay(key);
-  ["morning","challenge"].forEach(group => {
-    const el = document.getElementById(`goals-${group}`);
-    el.innerHTML = "";
-    GOALS.filter(g => g.group === group).forEach(goal => {
-      const checked = !!day[goal.id];
-      const streak  = currentStreak(goal.id);
-      const fire    = streak >= 7
-        ? `<span style="font-size:16px;line-height:1;filter:drop-shadow(0 0 4px #fc4)" title="${streak}-day streak 🔥🔥">🔥</span>`
-        : streak >= 3
-        ? `<span style="font-size:13px;line-height:1" title="${streak}-day streak">🔥</span>`
-        : "";
-      const stravaChecked = data[key]?.strava_checked || [];
-      const stravaPin = stravaChecked.includes(goal.id)
-        ? `<span class="strava-goal-dot" title="Auto-checked by Strava"></span>`
-        : "";
-      const card = document.createElement("div");
-      card.className = "goal-card" + (checked ? " checked" : "");
-      card.innerHTML = `
-        <div class="goal-icon">${goal.icon}</div>
-        <div class="goal-text">
-          <div class="goal-label">${goal.label}${fire}${stravaPin}</div>
-          <div class="goal-sub">${goal.sub}</div>
-        </div>
-        <div class="goal-check">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="2,7 6,11 12,3"/>
-          </svg>
-        </div>`;
-      card.onclick = () => toggleGoal(key, goal.id);
-      el.appendChild(card);
-    });
-  });
+  const coreEl  = document.getElementById("goals-core");
+  const bonusEl = document.getElementById("goals-bonus");
+  coreEl.innerHTML  = "";
+  bonusEl.innerHTML = "";
+  CORE_GOALS.forEach(g  => coreEl.appendChild(makeGoalCard(g, key, false)));
+  BONUS_GOALS.forEach(g => bonusEl.appendChild(makeGoalCard(g, key, true)));
 }
 
 function toggleGoal(key, goalId) {
@@ -1293,7 +1349,7 @@ function toggleGoal(key, goalId) {
   save();
 
   const newScore = getScore(key);
-  if (newScore === GOALS.length && prevScore < GOALS.length && isToday(currentDate)) {
+  if (newScore === CORE_COUNT && prevScore < CORE_COUNT && isToday(currentDate)) {
     const coins = computeCoins();
     const isBoss = isBossDay(key);
     const sub = document.getElementById("celebration-sub");
@@ -1320,7 +1376,7 @@ function saveField(field, val) {
 function updateRing() {
   const score = getScore(toKey(currentDate));
   const circ  = 263.9;
-  document.getElementById("ring-fill").style.strokeDashoffset = circ - circ * (score / GOALS.length);
+  document.getElementById("ring-fill").style.strokeDashoffset = circ - circ * (score / CORE_COUNT);
   document.getElementById("ring-score").textContent = score;
 }
 
@@ -1362,7 +1418,8 @@ function renderWeek() {
     html += `<th>${DAYS[d.getDay()]}<br><span style="font-size:9px;color:var(--text-mute)">${d.getDate()}</span></th>`;
   });
   html += "</tr></thead><tbody>";
-  GOALS.forEach(goal => {
+  // Core rows, then a divider, then bonus rows
+  CORE_GOALS.forEach(goal => {
     html += `<tr><td class='goal-name-td'>${goal.icon} ${goal.label}</td>`;
     days.forEach(d => {
       const key  = toKey(d);
@@ -1372,13 +1429,24 @@ function renderWeek() {
     });
     html += "</tr>";
   });
+  html += `<tr><td colspan="8" style="padding:4px 0"><div style="height:1px;background:var(--text-mute);margin:2px 0"></div></td></tr>`;
+  BONUS_GOALS.forEach(goal => {
+    html += `<tr><td class='goal-name-td' style="color:var(--gold);opacity:0.7">${goal.icon} ${goal.label}</td>`;
+    days.forEach(d => {
+      const key  = toKey(d);
+      const done = !!data[key]?.[goal.id];
+      const cls  = "heat-cell " + (done ? "heat-on" : "heat-off") + (isToday(d) ? " heat-today" : "");
+      html += `<td><div class="${cls}" style="${done ? "background:var(--gold)" : ""}" onclick="jumpToDay('${key}')">${done ? "⭐" : ""}</div></td>`;
+    });
+    html += "</tr>";
+  });
   html += "</tbody>";
   document.getElementById("week-table").innerHTML = html;
 
   document.getElementById("week-scores").innerHTML = days.map(d => {
     const score   = getScore(toKey(d));
-    const barH    = Math.max(2, Math.round((score / GOALS.length) * 60));
-    const perfect = score === GOALS.length;
+    const barH    = Math.max(2, Math.round((score / CORE_COUNT) * 60));
+    const perfect = score === CORE_COUNT;
     return `<div class="day-score-col">
       <div class="day-score-bar-wrap">
         <div class="day-score-bar${perfect ? " perfect" : ""}" style="height:${barH}px"></div>
@@ -1495,7 +1563,7 @@ function renderContribGraph() {
       if (isT) cls += ' is-today';
 
       const title = inRange
-        ? `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} — ${isFuture ? '–' : score + '/7'}`
+        ? `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} — ${isFuture ? '–' : score + '/3 core'}`
         : '';
 
       const onclick = inRange && !isFuture
@@ -1642,8 +1710,8 @@ function renderSummary() {
   const today        = new Date();
   const totalDays    = allKeys.length;
   const totalChecks  = allKeys.reduce((s,k) => s + getScore(k), 0);
-  const perfectDays  = allKeys.filter(k => getScore(k) === GOALS.length).length;
-  const overallPct   = Math.round(100 * totalChecks / (totalDays * GOALS.length));
+  const perfectDays  = allKeys.filter(k => getScore(k) === CORE_COUNT).length;
+  const overallPct   = Math.round(100 * totalChecks / (totalDays * CORE_COUNT));
   const daysToGo     = Math.max(0, Math.ceil((BIRTHDAY - today) / 86400000));
   const totalJourney = Math.ceil((BIRTHDAY - JOURNEY_START) / 86400000);
   const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - JOURNEY_START) / 86400000)) / totalJourney));
@@ -1758,7 +1826,7 @@ function renderSummary() {
         </div>
       </div>
       <div style="font-size:11px;color:var(--text-mute);margin-top:8px">
-        Every Sunday. Win with 7/7 for double XP. Lose with a partial day = −1 coin.
+        Every Sunday. Win with 3/3 core goals for double XP. Lose with a partial day = −1 coin.
       </div>
     </div>
 
@@ -1768,8 +1836,8 @@ function renderSummary() {
     </div>
 
     <div class="summary-card">
-      <div class="summary-card-title">Current streaks</div>
-      ${GOALS.map(g => {
+      <div class="summary-card-title">Core streaks</div>
+      ${CORE_GOALS.map(g => {
         const s    = currentStreak(g.id);
         const fire = s >= 7 ? " 🔥🔥" : s >= 3 ? " 🔥" : "";
         return `<div class="streak-row">
@@ -1778,16 +1846,38 @@ function renderSummary() {
           <div class="streak-val">${s} ${s === 1 ? "day" : "days"}${fire}</div>
         </div>`;
       }).join("")}
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--text-mute)">
+        <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Bonus streaks</div>
+        ${BONUS_GOALS.map(g => {
+          const s = currentStreak(g.id);
+          const fire = s >= 7 ? " 🔥🔥" : s >= 3 ? " 🔥" : "";
+          return `<div class="streak-row">
+            <div class="streak-icon">${g.icon}</div>
+            <div class="streak-name" style="color:var(--text-mute)">${g.label}</div>
+            <div class="streak-val" style="color:var(--gold)">${s} ${s === 1 ? "day" : "days"}${fire}</div>
+          </div>`;
+        }).join("")}
+      </div>
     </div>
 
     <div class="summary-card">
       <div class="summary-card-title">Goal breakdown</div>
-      ${GOALS.map(g => {
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px">Core</div>
+      ${CORE_GOALS.map(g => {
         const count = allKeys.filter(k => data[k]?.[g.id]).length;
         const pct   = totalDays ? Math.round(100 * count / totalDays) : 0;
         return `<div class="progress-bar-wrap" style="margin-bottom:12px">
           <div class="progress-bar-label"><span>${g.icon} ${g.label}</span><span>${pct}%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join("")}
+      <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:4px;margin-bottom:8px">⭐ Bonus</div>
+      ${BONUS_GOALS.map(g => {
+        const count = allKeys.filter(k => data[k]?.[g.id]).length;
+        const pct   = totalDays ? Math.round(100 * count / totalDays) : 0;
+        return `<div class="progress-bar-wrap" style="margin-bottom:12px">
+          <div class="progress-bar-label"><span>${g.icon} ${g.label}</span><span style="color:var(--gold)">${pct}%</span></div>
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:var(--gold-dim)"></div></div>
         </div>`;
       }).join("")}
     </div>`;
@@ -1885,37 +1975,21 @@ async function stravaSyncToday() {
     const activities = await res.json();
     if (!data[key]) data[key] = {};
 
-    // sport_type buckets
-    const STRENGTH_TYPES = new Set([
-      'WeightTraining','Yoga','Pilates','Crossfit','Stretching','Elliptical','StairStepper'
-    ]);
-
-    let walkedToday  = false;
-    let outsideCount = 0;
-    let strengthCount = 0;
+    let walkedToday = false;
+    let coachDone   = false;
 
     for (const a of activities) {
       const t        = a.sport_type || a.type || '';
       const duration = a.moving_time || a.elapsed_time || 0;
-      if (t === 'Walk') {
-        // Walks count toward morning walk goal (10+ min), not outside exercise
-        if (duration >= 600) walkedToday = true;
-      } else if (STRENGTH_TYPES.has(t)) {
-        strengthCount++;
-      } else {
-        // Everything else (Run, Ride, Hike, Swim, …)
-        if (duration >= 1800) outsideCount++;  // 30+ min → outside exercise
-        else                  strengthCount++; // short but intentional
-      }
+      // Any activity ≥ 10 min → Morning Walk
+      if (duration >= 600) walkedToday = true;
+      // Non-walk 30+ min → Coach Workout (prescribed training)
+      if (t !== 'Walk' && duration >= 1800) coachDone = true;
     }
 
-    // additional = strength/gym work OR a second cardio session beyond outside
-    const hasAdditional = strengthCount > 0 || outsideCount > 1;
-
     const checked = [];
-    if (walkedToday)   { data[key].walk       = true; checked.push("walk"); }
-    if (outsideCount)  { data[key].outside     = true; checked.push("outside"); }
-    if (hasAdditional) { data[key].additional  = true; checked.push("additional"); }
+    if (walkedToday) { data[key].walk  = true; checked.push("walk"); }
+    if (coachDone)   { data[key].coach = true; checked.push("coach"); }
     data[key].strava_checked       = checked;
     data[key].strava_synced_at     = Date.now();
     data[key].strava_activity_count = activities.length;
