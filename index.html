@@ -1360,16 +1360,37 @@ async function stravaSyncToday() {
     const activities = await res.json();
     if (!data[key]) data[key] = {};
 
-    const longActs  = activities.filter(a => (a.moving_time || a.elapsed_time || 0) >= 1800);
-    const shortActs = activities.filter(a => (a.moving_time || a.elapsed_time || 0) < 1800);
-    // outside = at least one 30-min+ activity
-    // additional = a separate activity beyond what already counted for outside
-    const hasOutside    = longActs.length > 0;
-    const hasAdditional = shortActs.length > 0 || longActs.length > 1;
+    // sport_type buckets
+    const STRENGTH_TYPES = new Set([
+      'WeightTraining','Yoga','Pilates','Crossfit','Stretching','Elliptical','StairStepper'
+    ]);
+
+    let walkedToday  = false;
+    let outsideCount = 0;
+    let strengthCount = 0;
+
+    for (const a of activities) {
+      const t        = a.sport_type || a.type || '';
+      const duration = a.moving_time || a.elapsed_time || 0;
+      if (t === 'Walk') {
+        // Walks count toward morning walk goal (10+ min), not outside exercise
+        if (duration >= 600) walkedToday = true;
+      } else if (STRENGTH_TYPES.has(t)) {
+        strengthCount++;
+      } else {
+        // Everything else (Run, Ride, Hike, Swim, …)
+        if (duration >= 1800) outsideCount++;  // 30+ min → outside exercise
+        else                  strengthCount++; // short but intentional
+      }
+    }
+
+    // additional = strength/gym work OR a second cardio session beyond outside
+    const hasAdditional = strengthCount > 0 || outsideCount > 1;
 
     const checked = [];
-    if (hasOutside)    { data[key].outside    = true; checked.push("outside"); }
-    if (hasAdditional) { data[key].additional = true; checked.push("additional"); }
+    if (walkedToday)   { data[key].walk       = true; checked.push("walk"); }
+    if (outsideCount)  { data[key].outside     = true; checked.push("outside"); }
+    if (hasAdditional) { data[key].additional  = true; checked.push("additional"); }
     data[key].strava_checked       = checked;
     data[key].strava_synced_at     = Date.now();
     data[key].strava_activity_count = activities.length;
