@@ -678,7 +678,7 @@ textarea.checkin-input { resize: none; height: 60px; }
 <!-- Celebration overlay -->
 <div id="celebration">
   <div class="celebration-box">
-    <div class="celebration-icon"><i class="ph-bold ph-trophy"></i></div>
+    <div class="celebration-icon" id="celebration-icon"></div>
     <div class="celebration-text">Perfect Day!</div>
     <div class="celebration-sub" id="celebration-sub">All 3 core goals hit!</div>
   </div>
@@ -687,7 +687,7 @@ textarea.checkin-input { resize: none; height: 60px; }
 <!-- Level-up overlay -->
 <div id="levelup-overlay">
   <div class="levelup-box">
-    <div class="levelup-icon"><i class="ph-bold ph-lightning"></i></div>
+    <div class="levelup-icon" id="levelup-icon"></div>
     <div class="levelup-sub">Level Up</div>
     <div class="levelup-name" id="levelup-name">Machine</div>
   </div>
@@ -819,15 +819,15 @@ textarea.checkin-input { resize: none; height: 60px; }
 <!-- Bottom nav -->
 <nav class="nav">
   <button class="nav-btn active" id="nav-today" onclick="switchTab('today')">
-    <i class="ph-bold ph-calendar-check"></i>
+    <span id="nav-icon-today"></span>
     Today
   </button>
   <button class="nav-btn" id="nav-week" onclick="switchTab('week')">
-    <i class="ph-bold ph-grid-four"></i>
+    <span id="nav-icon-week"></span>
     Week
   </button>
   <button class="nav-btn" id="nav-summary" onclick="switchTab('summary')">
-    <i class="ph-bold ph-chart-bar"></i>
+    <span id="nav-icon-summary"></span>
     Summary
   </button>
 </nav>
@@ -2482,6 +2482,13 @@ function renderCheckinSection() {
 }
 
 // ── Init ──
+// Inject static ph() icons that live in HTML (not in JS templates)
+document.getElementById("celebration-icon").innerHTML = ph("trophy", 44);
+document.getElementById("levelup-icon").innerHTML     = ph("lightning", 40);
+document.getElementById("nav-icon-today").innerHTML   = ph("calendar-check", 22);
+document.getElementById("nav-icon-week").innerHTML    = ph("grid-four", 22);
+document.getElementById("nav-icon-summary").innerHTML = ph("chart-bar", 22);
+
 load();
 applyTheme();
 updateCountdown();
