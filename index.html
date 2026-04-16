@@ -250,7 +250,11 @@ body {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 12px; padding: 14px; margin-bottom: 0;
 }
-.protein-tracker-row { display: flex; align-items: center; gap: 14px; }
+.protein-tracker-row { display: flex; align-items: center; gap: 10px; }
+.protein-total-val {
+  font-size: 22px; font-weight: 700; color: var(--text);
+  min-width: 36px; text-align: right; line-height: 1;
+}
 .protein-bar-bg {
   height: 3px; background: var(--border);
   border-radius: 2px; overflow: hidden; margin-top: 10px;
@@ -260,6 +264,34 @@ body {
   display: flex; justify-content: space-between;
   font-size: 10px; color: var(--text-mute); margin-top: 3px;
 }
+.protein-add-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+}
+.protein-add-row .data-inline-input {
+  flex: 1; max-width: 90px;
+}
+.protein-add-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 6px 14px;
+  font-size: 18px; font-weight: 700; line-height: 1; cursor: pointer;
+  transition: background 0.15s;
+}
+.protein-add-btn:active { background: var(--border); }
+.protein-entries {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+}
+.protein-entry-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 3px 10px;
+  font-size: 12px; font-weight: 600; color: var(--text-dim);
+}
+.protein-entry-del {
+  background: none; border: none; color: var(--text-mute);
+  font-size: 14px; line-height: 1; cursor: pointer; padding: 0;
+  margin-left: 2px;
+}
+.protein-entry-del:active { color: var(--red); }
 .metric-dot { font-size: 13px; line-height: 1; display: flex; align-items: center; }
 
 /* ── Week view ── */
@@ -778,31 +810,36 @@ textarea.checkin-input { resize: none; height: 60px; }
   <div class="goal-group-label">Core Goals</div>
   <div id="goals-core"></div>
 
+  <div class="goal-group-label bonus-section-label" style="margin-top:20px">
+    Bonus <span class="bonus-label-xp">⭐ +5 XP each</span>
+  </div>
+  <div id="goals-bonus"></div>
+
   <div class="protein-tracker" style="margin-top:12px">
     <div class="protein-tracker-row">
       <div class="data-card-icon" id="protein-tracker-icon"></div>
       <div class="data-card-label">PROTEIN</div>
-      <div class="data-card-value">
-        <input class="data-inline-input" id="protein-input" type="number" inputmode="decimal"
-          placeholder="—" step="5" min="0"
-          oninput="saveField('protein', this.value ? parseFloat(this.value) : null); updateProteinBar()">
-        <span class="data-card-unit">g</span>
-      </div>
+      <div style="flex:1"></div>
+      <span class="protein-total-val" id="protein-total-display">—</span>
+      <span class="data-card-unit" style="font-size:13px">g</span>
       <span id="protein-dot" class="data-card-dot"></span>
     </div>
     <div id="protein-progress" style="display:none">
       <div class="protein-bar-bg"><div id="protein-bar-fill" class="protein-bar-fill" style="width:0%"></div></div>
       <div class="protein-bar-labels">
         <span id="protein-bar-label"></span>
-        <span>target 170g</span>
+        <span>goal 130g</span>
       </div>
     </div>
+    <div class="protein-add-row">
+      <input class="data-inline-input" id="protein-add-input" type="number" inputmode="decimal"
+        placeholder="add grams" step="5" min="0"
+        onkeydown="if(event.key==='Enter'){addProteinEntry();event.preventDefault()}">
+      <span class="data-card-unit">g</span>
+      <button class="protein-add-btn" onclick="addProteinEntry()">+</button>
+    </div>
+    <div id="protein-entries" class="protein-entries" style="display:none"></div>
   </div>
-
-  <div class="goal-group-label bonus-section-label" style="margin-top:20px">
-    Bonus <span class="bonus-label-xp">⭐ +5 XP each</span>
-  </div>
-  <div id="goals-bonus"></div>
 
   <div class="data-section-label" style="margin-top:24px">Stats</div>
 
@@ -926,7 +963,7 @@ const GOALS = [
   { id: "pushups",   label: "Pee Pushups",                sub: "every time",                        icon: "lightning",    group: "bonus" },
   { id: "core_work", label: "Core Work",                  sub: "planks, abs, etc.",                 icon: "sparkle",      group: "bonus" },
   { id: "journal",   label: "Morning Journal",            sub: "intentions + reflections written",  icon: "note-pencil",  group: "bonus" },
-  { id: "protein_goal", label: "Protein",              sub: "170g+ hit today",                   icon: "egg",          group: "bonus" },
+  { id: "protein_goal", label: "Protein",              sub: "130g+ hit today",                   icon: "egg",          group: "bonus" },
 ];
 const CORE_GOALS  = GOALS.filter(g => g.group === "core");
 const BONUS_GOALS = GOALS.filter(g => g.group === "bonus");
@@ -983,7 +1020,7 @@ function currentStreak(goalId) {
 }
 
 // ── Sleep & Protein ──
-const PROTEIN_TARGET = 170;
+const PROTEIN_TARGET = 130;
 
 function colorDot(color) {
   return `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;margin-left:4px"></span>`;
@@ -1002,15 +1039,15 @@ function sleepDot(hours, dateKey) {
 function proteinDot(grams) {
   if (grams == null || isNaN(grams)) return "";
   if (grams >= PROTEIN_TARGET) return colorDot('var(--green)');
-  if (grams >= 150) return colorDot('var(--orange)');
-  if (grams >= 100) return colorDot('#F9A825');
+  if (grams >= 100) return colorDot('var(--orange)');
+  if (grams >= 60)  return colorDot('#F9A825');
   return colorDot('var(--red)');
 }
 
 function proteinBarColor(grams) {
   if (grams >= PROTEIN_TARGET) return "var(--green)";
-  if (grams >= 150) return "#e07840";
-  if (grams >= 100) return "#c8a020";
+  if (grams >= 100) return "#e07840";
+  if (grams >= 60)  return "#c8a020";
   return "var(--red)";
 }
 
@@ -1039,13 +1076,15 @@ function updateSleepFromParts() {
 }
 
 function updateProteinBar() {
-  const input = document.getElementById("protein-input");
-  if (!input) return;
-  const g    = input.value ? parseFloat(input.value) : null;
+  const key  = toKey(currentDate);
+  const g    = data[key]?.protein ?? null;
+  const totalDisplay = document.getElementById("protein-total-display");
   const prog = document.getElementById("protein-progress");
   const fill = document.getElementById("protein-bar-fill");
   const lbl  = document.getElementById("protein-bar-label");
   const dot  = document.getElementById("protein-dot");
+  const entriesEl = document.getElementById("protein-entries");
+  if (totalDisplay) totalDisplay.textContent = g != null ? Math.round(g) : "—";
   if (dot)  dot.innerHTML  = proteinDot(g);
   if (prog) prog.style.display = g != null ? "block" : "none";
   if (fill) {
@@ -1053,9 +1092,16 @@ function updateProteinBar() {
     fill.style.width      = pct + "%";
     fill.style.background = g != null ? proteinBarColor(g) : "";
   }
-  if (lbl)  lbl.textContent = g != null ? `${g}g` : "";
+  if (lbl) lbl.textContent = g != null ? `${Math.round(g)}g` : "";
+  // Render entry chips
+  const entries = Array.isArray(data[key]?.protein_log) ? data[key].protein_log : [];
+  if (entriesEl) {
+    entriesEl.style.display = entries.length ? "flex" : "none";
+    entriesEl.innerHTML = entries.map((e, i) =>
+      `<span class="protein-entry-chip">${e}g <button class="protein-entry-del" onclick="removeProteinEntry(${i})">×</button></span>`
+    ).join("");
+  }
   // Auto-check/uncheck protein_goal bonus goal
-  const key = toKey(currentDate);
   if (!data[key]) data[key] = {};
   if (g != null && g >= PROTEIN_TARGET) {
     if (!data[key].protein_goal) {
@@ -1068,6 +1114,32 @@ function updateProteinBar() {
     data[key].protein_goal_auto = false;
     renderGoals();
   }
+}
+
+function addProteinEntry() {
+  const input = document.getElementById("protein-add-input");
+  if (!input) return;
+  const val = parseFloat(input.value);
+  if (isNaN(val) || val <= 0) return;
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  if (!Array.isArray(data[key].protein_log)) data[key].protein_log = [];
+  data[key].protein_log.push(val);
+  data[key].protein = data[key].protein_log.reduce((s, x) => s + x, 0);
+  input.value = "";
+  save();
+  updateProteinBar();
+}
+
+function removeProteinEntry(idx) {
+  const key = toKey(currentDate);
+  if (!Array.isArray(data[key]?.protein_log)) return;
+  data[key].protein_log.splice(idx, 1);
+  data[key].protein = data[key].protein_log.length
+    ? data[key].protein_log.reduce((s, x) => s + x, 0)
+    : null;
+  save();
+  updateProteinBar();
 }
 
 // ── Sleep/Protein summary stats ──
@@ -1570,11 +1642,9 @@ function updateRing() {
 function updateInputs() {
   const day = getDay(toKey(currentDate));
   const weightEl = document.getElementById("weight-input");
-  const proteinEl = document.getElementById("protein-input");
   const hEl = document.getElementById("sleep-h-input");
   const mEl = document.getElementById("sleep-m-input");
-  if (weightEl)  weightEl.value  = day.weight  != null ? day.weight  : "";
-  if (proteinEl) proteinEl.value = day.protein != null ? day.protein : "";
+  if (weightEl) weightEl.value = day.weight != null ? day.weight : "";
   if (day.sleep != null) {
     const totalH = day.sleep;
     const h = Math.floor(totalH);
