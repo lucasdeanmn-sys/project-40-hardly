@@ -10,7 +10,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
 <title>Project 40 Hardly</title>
-<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.4/src/bold/index.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -156,7 +156,7 @@ body {
 .goal-card.checked .goal-label { color: var(--green); }
 .goal-icon {
   font-size: 20px; width: 26px; text-align: center;
-  flex-shrink: 0; color: var(--text-mute); line-height: 1;
+  flex-shrink: 0; color: #666; line-height: 1;
   display: flex; align-items: center; justify-content: center;
 }
 .goal-card.checked .goal-icon { color: var(--green); }
@@ -787,12 +787,6 @@ textarea.checkin-input { resize: none; height: 60px; }
     </div>
   </div>
 
-  <div class="field-group">
-    <div class="field-label">Daily note</div>
-    <textarea class="field-input" id="note-input" placeholder="How'd it go?"
-      oninput="saveField('note', this.value)"></textarea>
-  </div>
-
   <div id="strava-section" style="margin-top:20px"></div>
 </div>
 
@@ -947,7 +941,7 @@ function updateSleepDot() {
   const dotEl = document.getElementById("sleep-dot");
   if (!dotEl || !input) return;
   const hours = input.value ? parseFloat(input.value) : null;
-  dotEl.textContent = hours != null ? sleepDot(hours, toKey(currentDate)) : "";
+  dotEl.innerHTML = hours != null ? sleepDot(hours, toKey(currentDate)) : "";
 }
 
 function updateProteinBar() {
@@ -958,7 +952,7 @@ function updateProteinBar() {
   const fill = document.getElementById("protein-bar-fill");
   const lbl  = document.getElementById("protein-bar-label");
   const dot  = document.getElementById("protein-dot");
-  if (dot)  dot.textContent  = proteinDot(g);
+  if (dot)  dot.innerHTML  = proteinDot(g);
   if (prog) prog.style.display = g != null ? "block" : "none";
   if (fill) {
     const pct = g != null ? Math.min(100, Math.round(100 * g / PROTEIN_TARGET)) : 0;
@@ -1470,7 +1464,6 @@ function updateInputs() {
   document.getElementById("weight-input").value  = day.weight  != null ? day.weight  : "";
   document.getElementById("sleep-input").value   = day.sleep   != null ? day.sleep   : "";
   document.getElementById("protein-input").value = day.protein != null ? day.protein : "";
-  document.getElementById("note-input").value    = day.note    || "";
   updateSleepDot();
   updateProteinBar();
 }
