@@ -546,6 +546,28 @@ body {
 .strava-sync-btn:disabled { opacity: 0.4; cursor: default; }
 .strava-goal-dot { width: 6px; height: 6px; border-radius: 50%; background: #FC4C02; display: inline-block; flex-shrink: 0; }
 
+/* ── Sync toast ── */
+.sync-toast {
+  position: fixed; bottom: calc(var(--nav-h) + 12px); left: 50%; transform: translateX(-50%);
+  background: #1a1a1a; border: 1px solid #333; border-radius: 12px;
+  padding: 12px 16px; min-width: 220px; max-width: calc(100vw - 32px);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+  z-index: 9999; pointer-events: none;
+  animation: toastIn 0.2s ease, toastOut 0.3s ease 3.7s forwards;
+}
+.sync-toast-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #FC4C02; margin-bottom: 7px;
+}
+.sync-toast-line {
+  font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.5;
+}
+.sync-toast-empty {
+  font-size: 13px; color: var(--text-dim);
+}
+@keyframes toastIn  { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+@keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+
 /* ── Gamification bar ── */
 .xp-section { padding: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
 .level-coin-row { display: flex; align-items: center; justify-content: space-between; }
@@ -2339,6 +2361,30 @@ async function stravaFreshToken() {
   return d.access_token;
 }
 
+// GOAL_LABELS for toast display
+const STRAVA_GOAL_LABELS = {
+  coach:     "Coach Workout",
+  walk:      "Morning Walk",
+  yoga:      "Yoga / Stretching",
+  core_work: "Core Work",
+};
+
+function showSyncToast(lines) {
+  // Remove any existing toast
+  document.querySelectorAll(".sync-toast").forEach(el => el.remove());
+  const el = document.createElement("div");
+  el.className = "sync-toast";
+  if (lines.length === 0) {
+    el.innerHTML = `<div class="sync-toast-title">Strava Sync</div>
+      <div class="sync-toast-empty">No activities found today</div>`;
+  } else {
+    el.innerHTML = `<div class="sync-toast-title">Strava Sync</div>`
+      + lines.map(l => `<div class="sync-toast-line">${l}</div>`).join("");
+  }
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4100);
+}
+
 async function stravaSyncToday() {
   if (!isToday(currentDate)) return;
   const token = await stravaFreshToken();
@@ -2365,28 +2411,60 @@ async function stravaSyncToday() {
     const activities = await res.json();
     if (!data[key]) data[key] = {};
 
-    let walkedToday = false;
-    let coachDone   = false;
+    const checked    = [];
+    const toastLines = [];
 
     for (const a of activities) {
       const t        = a.sport_type || a.type || '';
       const duration = a.moving_time || a.elapsed_time || 0;
-      // Any activity ≥ 10 min → Morning Walk
-      if (duration >= 600) walkedToday = true;
-      // Non-walk 30+ min → Coach Workout (prescribed training)
-      if (t !== 'Walk' && duration >= 1800) coachDone = true;
+      const mins     = Math.round(duration / 60);
+      const hour     = new Date(a.start_date_local || a.start_date).getHours();
+
+      const isRun      = t === 'Run';
+      const isRide     = t === 'Ride';
+      const isVirtual  = t === 'VirtualRide' || t === 'VirtualRun';
+      const isWalkHike = t === 'Walk' || t === 'Hike';
+      const isYoga     = t === 'Yoga';
+      const isStrength = t === 'Workout' || t === 'WeightTraining';
+
+      // ── Coach Workout ───────────────────────────────────────────
+      // Run or Ride 30+ min, Virtual Ride/Run any duration
+      if ((isRun || isRide) && duration >= 1800 || isVirtual) {
+        const label = isVirtual ? t.replace('Virtual','Virtual ') : `${t} ${mins} min`;
+        toastLines.push(`${label} → ${STRAVA_GOAL_LABELS.coach} ✓`);
+        if (!data[key].coach) { data[key].coach = true; checked.push("coach"); }
+
+      // ── Morning Walk ─────────────────────────────────────────────
+      // Walk or Hike any duration before 10 AM
+      } else if (isWalkHike && hour < 10) {
+        toastLines.push(`${t} ${mins} min → ${STRAVA_GOAL_LABELS.walk} ✓`);
+        if (!data[key].walk) { data[key].walk = true; checked.push("walk"); }
+
+      // Short Run (< 30 min) before 10 AM → Morning Walk
+      } else if (isRun && duration < 1800 && hour < 10) {
+        toastLines.push(`Run ${mins} min → ${STRAVA_GOAL_LABELS.walk} ✓`);
+        if (!data[key].walk) { data[key].walk = true; checked.push("walk"); }
+
+      // ── Yoga / Stretching ────────────────────────────────────────
+      } else if (isYoga) {
+        toastLines.push(`Yoga → ${STRAVA_GOAL_LABELS.yoga} ✓`);
+        if (!data[key].yoga) { data[key].yoga = true; checked.push("yoga"); }
+
+      // ── Core Work ────────────────────────────────────────────────
+      } else if (isStrength) {
+        toastLines.push(`${t} ${mins} min → ${STRAVA_GOAL_LABELS.core_work} ✓`);
+        if (!data[key].core_work) { data[key].core_work = true; checked.push("core_work"); }
+      }
     }
 
-    const checked = [];
-    if (walkedToday) { data[key].walk  = true; checked.push("walk"); }
-    if (coachDone)   { data[key].coach = true; checked.push("coach"); }
-    data[key].strava_checked       = checked;
-    data[key].strava_synced_at     = Date.now();
+    data[key].strava_checked        = checked;
+    data[key].strava_synced_at      = Date.now();
     data[key].strava_activity_count = activities.length;
 
     stravaState = "idle";
     save();
     renderToday();
+    showSyncToast(toastLines);
   } catch {
     stravaState = "error";
     renderStravaSection();
