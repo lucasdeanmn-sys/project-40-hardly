@@ -198,28 +198,7 @@ body {
   padding: 2px 6px; flex-shrink: 0; margin-left: auto;
 }
 
-/* ── Field inputs ── */
-.field-group { margin-top: 20px; }
-.field-label {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px;
-}
-.field-label-row {
-  display: flex; align-items: center;
-  justify-content: space-between; margin-bottom: 8px;
-}
-.field-label-row .field-label { margin-bottom: 0; }
-.metric-dot { font-size: 13px; line-height: 1; }
-.metric-input { width: 120px; }
-.protein-bar-bg {
-  height: 3px; background: var(--border);
-  border-radius: 2px; overflow: hidden; margin-top: 8px;
-}
-.protein-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease, background 0.3s ease; }
-.protein-bar-labels {
-  display: flex; justify-content: space-between;
-  font-size: 10px; color: var(--text-mute); margin-top: 3px;
-}
+/* ── Field inputs (legacy, used in modals) ── */
 .field-input {
   width: 100%; background: var(--surface);
   border: 1px solid var(--border); border-radius: 10px;
@@ -228,8 +207,60 @@ body {
   -webkit-appearance: none;
 }
 .field-input:focus { border-color: #444; }
-.weight-input { width: 140px; }
-textarea.field-input { resize: none; height: 80px; }
+
+/* ── Data cards (weight, sleep) ── */
+.data-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-mute); margin: 20px 0 8px;
+}
+.data-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px;
+  margin-bottom: 8px; cursor: text;
+}
+.data-card-icon {
+  width: 26px; flex-shrink: 0; color: #666;
+  display: flex; align-items: center; justify-content: center;
+}
+.data-card-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-mute); flex: 1;
+}
+.data-card-value { display: flex; align-items: center; gap: 5px; }
+.data-inline-input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-size: 18px; font-weight: 600;
+  font-family: inherit; text-align: right;
+  -webkit-appearance: none; -moz-appearance: textfield;
+  width: 52px; padding: 2px 0;
+}
+.data-inline-input.sleep-m { width: 34px; }
+.data-inline-input::-webkit-outer-spin-button,
+.data-inline-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.data-inline-input::placeholder { color: var(--text-mute); font-weight: 400; }
+.data-card-unit {
+  font-size: 11px; color: var(--text-mute);
+  font-weight: 600; letter-spacing: 0.04em; flex-shrink: 0;
+}
+.data-card-dot { margin-left: 4px; display: flex; align-items: center; }
+
+/* ── Protein tracker ── */
+.protein-tracker {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 0;
+}
+.protein-tracker-row { display: flex; align-items: center; gap: 14px; }
+.protein-bar-bg {
+  height: 3px; background: var(--border);
+  border-radius: 2px; overflow: hidden; margin-top: 10px;
+}
+.protein-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease, background 0.3s ease; }
+.protein-bar-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--text-mute); margin-top: 3px;
+}
+.metric-dot { font-size: 13px; line-height: 1; display: flex; align-items: center; }
 
 /* ── Week view ── */
 .week-nav {
@@ -747,36 +778,18 @@ textarea.checkin-input { resize: none; height: 60px; }
   <div class="goal-group-label">Core Goals</div>
   <div id="goals-core"></div>
 
-  <div class="goal-group-label bonus-section-label">
-    Bonus <span class="bonus-label-xp">⭐ +5 XP each</span>
-  </div>
-  <div id="goals-bonus"></div>
-
-  <div class="field-group">
-    <div class="field-label">Weight (lbs)</div>
-    <input class="field-input weight-input" type="number" inputmode="decimal"
-      id="weight-input" placeholder="—" step="0.1"
-      onchange="saveField('weight', this.value ? parseFloat(this.value) : null)">
-  </div>
-
-  <div class="field-group">
-    <div class="field-label-row">
-      <span class="field-label">Sleep (hrs)</span>
-      <span id="sleep-dot" class="metric-dot"></span>
+  <div class="protein-tracker" style="margin-top:12px">
+    <div class="protein-tracker-row">
+      <div class="data-card-icon" id="protein-tracker-icon"></div>
+      <div class="data-card-label">PROTEIN</div>
+      <div class="data-card-value">
+        <input class="data-inline-input" id="protein-input" type="number" inputmode="decimal"
+          placeholder="—" step="5" min="0"
+          oninput="saveField('protein', this.value ? parseFloat(this.value) : null); updateProteinBar()">
+        <span class="data-card-unit">g</span>
+      </div>
+      <span id="protein-dot" class="data-card-dot"></span>
     </div>
-    <input class="field-input metric-input" type="number" inputmode="decimal"
-      id="sleep-input" placeholder="—" step="0.5" min="0" max="24"
-      oninput="saveField('sleep', this.value ? parseFloat(this.value) : null); updateSleepDot()">
-  </div>
-
-  <div class="field-group">
-    <div class="field-label-row">
-      <span class="field-label">Protein (g)</span>
-      <span id="protein-dot" class="metric-dot"></span>
-    </div>
-    <input class="field-input metric-input" type="number" inputmode="decimal"
-      id="protein-input" placeholder="—" step="5" min="0"
-      oninput="saveField('protein', this.value ? parseFloat(this.value) : null); updateProteinBar()">
     <div id="protein-progress" style="display:none">
       <div class="protein-bar-bg"><div id="protein-bar-fill" class="protein-bar-fill" style="width:0%"></div></div>
       <div class="protein-bar-labels">
@@ -784,6 +797,40 @@ textarea.checkin-input { resize: none; height: 60px; }
         <span>target 170g</span>
       </div>
     </div>
+  </div>
+
+  <div class="goal-group-label bonus-section-label" style="margin-top:20px">
+    Bonus <span class="bonus-label-xp">⭐ +5 XP each</span>
+  </div>
+  <div id="goals-bonus"></div>
+
+  <div class="data-section-label" style="margin-top:24px">Stats</div>
+
+  <div class="data-card" onclick="document.getElementById('weight-input').focus()">
+    <div class="data-card-icon" id="weight-card-icon"></div>
+    <div class="data-card-label">Weight</div>
+    <div class="data-card-value">
+      <input class="data-inline-input" id="weight-input" type="number" inputmode="decimal"
+        placeholder="—" step="0.1"
+        onchange="saveField('weight', this.value ? parseFloat(this.value) : null)">
+      <span class="data-card-unit">lbs</span>
+    </div>
+  </div>
+
+  <div class="data-card">
+    <div class="data-card-icon" id="sleep-card-icon"></div>
+    <div class="data-card-label">Sleep</div>
+    <div class="data-card-value">
+      <input class="data-inline-input" id="sleep-h-input" type="number" inputmode="numeric"
+        placeholder="—" min="0" max="12"
+        oninput="updateSleepFromParts()">
+      <span class="data-card-unit">h</span>
+      <input class="data-inline-input sleep-m" id="sleep-m-input" type="number" inputmode="numeric"
+        placeholder="00" min="0" max="59"
+        oninput="updateSleepFromParts()">
+      <span class="data-card-unit">m</span>
+    </div>
+    <span id="sleep-dot" class="data-card-dot" style="margin-left:6px"></span>
   </div>
 
   <div id="strava-section" style="margin-top:20px"></div>
@@ -860,6 +907,8 @@ const PH_ICONS = {
   'grid-four': `<path d="M200,36H56A20,20,0,0,0,36,56V200a20,20,0,0,0,20,20H200a20,20,0,0,0,20-20V56A20,20,0,0,0,200,36Zm-4,80H140V60h56ZM116,60v56H60V60ZM60,140h56v56H60Zm80,56V140h56v56Z"/>`,
   'chart-bar': `<path d="M224,196h-4V40a12,12,0,0,0-12-12H152a12,12,0,0,0-12,12V76H96A12,12,0,0,0,84,88v36H48a12,12,0,0,0-12,12v60H32a12,12,0,0,0,0,24H224a12,12,0,0,0,0-24ZM164,52h32V196H164Zm-56,48h32v96H108ZM60,148H84v48H60Z"/>`,
   'x': `<path d="M208.49,191.51a12,12,0,0,1-17,17L128,145,64.49,208.49a12,12,0,0,1-17-17L111,128,47.51,64.49a12,12,0,0,1,17-17L128,111l63.51-63.52a12,12,0,0,1,17,17L145,128Z"/>`,
+  'scales': `<path d="M243.14,131.54l-32-80h0a12,12,0,0,0-13.73-7.25L140,57V40a12,12,0,0,0-24,0V62.37L53.4,76.29a12,12,0,0,0-8.54,7.25h0l0,0v0l-32,79.92A12,12,0,0,0,12,168c0,12.13,6.2,22.43,17.45,29A55,55,0,0,0,56,204a55,55,0,0,0,26.55-7C93.8,190.43,100,180.13,100,168a12,12,0,0,0-.86-4.46L72.38,96.65,116,87V204H104a12,12,0,0,0,0,24h48a12,12,0,0,0,0-24H140V81.63l40.42-9-23.56,58.9A12,12,0,0,0,156,136c0,12.13,6.2,22.43,17.45,29a53.78,53.78,0,0,0,53.1,0C237.8,158.43,244,148.13,244,136A12,12,0,0,0,243.14,131.54ZM56,180c-3.71,0-18-1.87-19.81-10.18L56,120.31l19.81,49.51C74,178.13,59.71,180,56,180Zm144-32c-3.71,0-18-1.87-19.81-10.18L200,88.31l19.81,49.51C218,146.13,203.71,148,200,148Z"/>`,
+  'egg': `<path d="M190,57.34C171.06,29,147.88,12,128,12S84.94,29,66,57.34C46.94,86,36,120.46,36,152a92,92,0,0,0,184,0C220,120.46,209.06,86,190,57.34ZM128,220a68.07,68.07,0,0,1-68-68c0-61.12,46.19-116,68-116s68,54.88,68,116A68.07,68.07,0,0,1,128,220Z"/>`,
 };
 
 function ph(name, size) {
@@ -870,13 +919,14 @@ function ph(name, size) {
 
 const GOALS = [
   { id: "coach",     label: "Coach Workout",             sub: "prescribed training",               icon: "person-simple-run",  group: "core"  },
-  { id: "nutrition", label: "Nutrition + Protein 170g+", sub: "on plan and hit protein target",    icon: "fork-knife",   group: "core"  },
+  { id: "nutrition", label: "Nutrition",                  sub: "on plan",                           icon: "fork-knife",   group: "core"  },
   { id: "reading",   label: "Read",                      sub: "fiction or non-fiction, 10+ pages", icon: "book-open",    group: "core"  },
   { id: "walk",      label: "Morning Walk",               sub: "outside time",                      icon: "footprints",   group: "bonus" },
   { id: "yoga",      label: "Yoga / Stretching",          sub: "morning or night",                  icon: "person-simple-tai-chi", group: "bonus" },
   { id: "pushups",   label: "Pee Pushups",                sub: "every time",                        icon: "lightning",    group: "bonus" },
   { id: "core_work", label: "Core Work",                  sub: "planks, abs, etc.",                 icon: "sparkle",      group: "bonus" },
   { id: "journal",   label: "Morning Journal",            sub: "intentions + reflections written",  icon: "note-pencil",  group: "bonus" },
+  { id: "protein_goal", label: "Protein",              sub: "170g+ hit today",                   icon: "egg",          group: "bonus" },
 ];
 const CORE_GOALS  = GOALS.filter(g => g.group === "core");
 const BONUS_GOALS = GOALS.filter(g => g.group === "bonus");
@@ -965,11 +1015,27 @@ function proteinBarColor(grams) {
 }
 
 function updateSleepDot() {
-  const input = document.getElementById("sleep-input");
+  const hEl  = document.getElementById("sleep-h-input");
   const dotEl = document.getElementById("sleep-dot");
-  if (!dotEl || !input) return;
-  const hours = input.value ? parseFloat(input.value) : null;
-  dotEl.innerHTML = hours != null ? sleepDot(hours, toKey(currentDate)) : "";
+  if (!dotEl) return;
+  const h = hEl?.value !== "" ? parseInt(hEl.value, 10) : null;
+  const mEl = document.getElementById("sleep-m-input");
+  const m = mEl?.value !== "" ? parseInt(mEl?.value || "0", 10) : 0;
+  const total = h != null ? h + m / 60 : null;
+  dotEl.innerHTML = total != null ? sleepDot(total, toKey(currentDate)) : "";
+}
+
+function updateSleepFromParts() {
+  const hEl = document.getElementById("sleep-h-input");
+  const mEl = document.getElementById("sleep-m-input");
+  if (!hEl) return;
+  const h = hEl.value !== "" ? parseInt(hEl.value, 10) : null;
+  const m = mEl?.value !== "" ? parseInt(mEl.value, 10) : 0;
+  const total = (h != null) ? h + (m || 0) / 60 : null;
+  saveField('sleep', total != null ? Math.round(total * 100) / 100 : null);
+  // Update dot
+  const dotEl = document.getElementById("sleep-dot");
+  if (dotEl) dotEl.innerHTML = total != null ? sleepDot(total, toKey(currentDate)) : "";
 }
 
 function updateProteinBar() {
@@ -988,6 +1054,20 @@ function updateProteinBar() {
     fill.style.background = g != null ? proteinBarColor(g) : "";
   }
   if (lbl)  lbl.textContent = g != null ? `${g}g` : "";
+  // Auto-check/uncheck protein_goal bonus goal
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  if (g != null && g >= PROTEIN_TARGET) {
+    if (!data[key].protein_goal) {
+      data[key].protein_goal = true;
+      data[key].protein_goal_auto = true;
+      renderGoals();
+    }
+  } else if (data[key].protein_goal_auto) {
+    data[key].protein_goal = false;
+    data[key].protein_goal_auto = false;
+    renderGoals();
+  }
 }
 
 // ── Sleep/Protein summary stats ──
@@ -1489,9 +1569,22 @@ function updateRing() {
 
 function updateInputs() {
   const day = getDay(toKey(currentDate));
-  document.getElementById("weight-input").value  = day.weight  != null ? day.weight  : "";
-  document.getElementById("sleep-input").value   = day.sleep   != null ? day.sleep   : "";
-  document.getElementById("protein-input").value = day.protein != null ? day.protein : "";
+  const weightEl = document.getElementById("weight-input");
+  const proteinEl = document.getElementById("protein-input");
+  const hEl = document.getElementById("sleep-h-input");
+  const mEl = document.getElementById("sleep-m-input");
+  if (weightEl)  weightEl.value  = day.weight  != null ? day.weight  : "";
+  if (proteinEl) proteinEl.value = day.protein != null ? day.protein : "";
+  if (day.sleep != null) {
+    const totalH = day.sleep;
+    const h = Math.floor(totalH);
+    const m = Math.round((totalH - h) * 60);
+    if (hEl) hEl.value = h;
+    if (mEl) mEl.value = m > 0 ? m : "";
+  } else {
+    if (hEl) hEl.value = "";
+    if (mEl) mEl.value = "";
+  }
   updateSleepDot();
   updateProteinBar();
 }
@@ -2488,6 +2581,9 @@ document.getElementById("levelup-icon").innerHTML     = ph("lightning", 40);
 document.getElementById("nav-icon-today").innerHTML   = ph("calendar-check", 22);
 document.getElementById("nav-icon-week").innerHTML    = ph("grid-four", 22);
 document.getElementById("nav-icon-summary").innerHTML = ph("chart-bar", 22);
+document.getElementById("weight-card-icon").innerHTML   = ph("scales", 18);
+document.getElementById("sleep-card-icon").innerHTML    = ph("moon", 18);
+document.getElementById("protein-tracker-icon").innerHTML = ph("fork-knife", 18);
 
 load();
 applyTheme();
