@@ -748,6 +748,97 @@
     --gold-dim: rgba(220,110,50,0.4); --gold-faint: rgba(220,110,50,0.08);
     --text: #f2e8de; --text-dim: #8a6050; --text-mute: #3d2018;
   }
+
+  /* ── Check-in cards ── */
+  .checkin-card {
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
+  }
+  .checkin-morning {
+    background: rgba(200,169,110,0.07);
+    border: 1px solid rgba(200,169,110,0.22);
+  }
+  .checkin-evening {
+    background: rgba(100,130,200,0.07);
+    border: 1px solid rgba(100,130,200,0.2);
+  }
+  .checkin-done {
+    background: rgba(92,184,122,0.06);
+    border: 1px solid rgba(92,184,122,0.15);
+  }
+  .checkin-missed {
+    background: var(--surface); border: 1px solid var(--text-mute);
+  }
+  .checkin-header {
+    display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
+  }
+  .checkin-icon { font-size: 20px; flex-shrink: 0; line-height: 1.2; }
+  .checkin-title { font-size: 14px; font-weight: 700; color: var(--text); }
+  .checkin-title-eve { color: #8aafe8; }
+  .checkin-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+  .checkin-field { margin-bottom: 12px; }
+  .checkin-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
+  }
+  .checkin-input {
+    width: 100%; background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-size: 15px; padding: 10px 12px;
+    outline: none; font-family: inherit; -webkit-appearance: none;
+    transition: border-color 0.15s;
+  }
+  .checkin-input:focus { border-color: var(--gold-dim); }
+  textarea.checkin-input { resize: none; height: 60px; }
+  .checkin-btn {
+    width: 100%; padding: 12px;
+    background: var(--gold); color: var(--bg);
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    touch-action: manipulation; transition: opacity 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .checkin-btn:active { opacity: 0.82; }
+  .checkin-btn-eve { background: #5a7fd0; }
+
+  /* Stars */
+  .star-row { display: flex; gap: 6px; padding: 2px 0 10px; }
+  .star-btn {
+    font-size: 26px; cursor: pointer; line-height: 1; user-select: none;
+    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    transition: transform 0.1s; filter: grayscale(1) opacity(0.35);
+  }
+  .star-btn.lit { filter: none; }
+  .star-btn:active { transform: scale(0.88); }
+
+  /* Non-neg chips */
+  .nonneg-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .nonneg-chip {
+    padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .nonneg-chip.selected {
+    background: var(--gold-faint); border-color: var(--gold-dim); color: var(--gold);
+  }
+
+  /* Yes/No */
+  .yesno-row { display: flex; gap: 8px; }
+  .yesno-btn {
+    flex: 1; padding: 9px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text-dim); cursor: pointer;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+    transition: background 0.12s, border-color 0.12s, color 0.12s;
+  }
+  .yesno-btn.sel-yes {
+    background: var(--green-faint); border-color: rgba(92,184,122,0.3); color: var(--green);
+  }
+  .yesno-btn.sel-no {
+    background: var(--gold-faint); border-color: rgba(200,169,110,0.2); color: var(--text-mute);
+  }
 </style>
 </head>
 <body>
@@ -807,6 +898,7 @@
 
 <!-- Today tab -->
 <div class="section active" id="sec-today">
+  <div id="checkin-section"></div>
   <div class="score-wrap">
     <div class="ring-container">
       <svg viewBox="0 0 96 96" width="96" height="96">
@@ -935,6 +1027,7 @@ const GOALS = [
   { id: "yoga",      label: "Yoga / Stretching",sub: "morning or night",                  icon: "🧘", group: "bonus" },
   { id: "pushups",   label: "Pee Pushups",      sub: "every time",                        icon: "💪", group: "bonus" },
   { id: "core_work", label: "Core Work",        sub: "planks, abs, etc.",                 icon: "🦾", group: "bonus" },
+  { id: "journal",   label: "Morning Journal",  sub: "intentions + reflections written",  icon: "📓", group: "bonus" },
 ];
 const CORE_GOALS  = GOALS.filter(g => g.group === "core");
 const BONUS_GOALS = GOALS.filter(g => g.group === "bonus");
@@ -1549,6 +1642,7 @@ function updateInputs() {
 
 function renderToday() {
   renderDateDisplay();
+  renderCheckinSection();
   renderStravaSection();
   renderGoals();
   updateRing();
@@ -1896,6 +1990,10 @@ function renderSummary() {
   const totalJourney = Math.ceil((BIRTHDAY - JOURNEY_START) / 86400000);
   const journeyPct   = Math.min(100, Math.round(100 * Math.max(0, Math.floor((today - JOURNEY_START) / 86400000)) / totalJourney));
 
+  // Pre-compute date-range buckets for later cards
+  const last7Keys  = allKeys.filter(k => (today - new Date(k)) / 86400000 < 7);
+  const last30Keys = allKeys.filter(k => (today - new Date(k)) / 86400000 < 30);
+
   // Gamification
   const xp     = computeTotalXP();
   const lvl    = getLevelInfo(xp);
@@ -2016,8 +2114,6 @@ function renderSummary() {
     </div>
 
     ${(() => {
-      const last7Keys  = allKeys.filter(k => { const d=new Date(k); return (today-d)/86400000 < 7; });
-      const last30Keys = allKeys.filter(k => { const d=new Date(k); return (today-d)/86400000 < 30; });
       const s7  = sleepStatsFor(last7Keys);
       const s30 = sleepStatsFor(last30Keys);
       const p7  = proteinStatsFor(last7Keys);
@@ -2052,6 +2148,61 @@ function renderSummary() {
             <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">Insight</div>
             <div style="font-size:12px;color:var(--text-dim);line-height:1.5">${corr.text}</div>
           </div>` : ""}
+      </div>`;
+    })()}
+
+    ${(() => {
+      const ciKeys = allKeys.filter(k => data[k]?.morning_checked_in);
+      const evKeys = allKeys.filter(k => data[k]?.evening_checked_in);
+      const jKeys  = allKeys.filter(k => data[k]?.journal);
+      if (!ciKeys.length && !evKeys.length) return "";
+
+      // Non-negotiable hit rate
+      const nnSetKeys = ciKeys.filter(k => data[k].morning_nonneg);
+      const nnHitKeys = nnSetKeys.filter(k => data[k][data[k].morning_nonneg]);
+      const nnRate    = nnSetKeys.length ? Math.round(100 * nnHitKeys.length / nnSetKeys.length) : null;
+
+      // Evening ratings
+      const r7  = last7Keys.map(k => data[k]?.evening_rating).filter(r => r > 0);
+      const r30 = last30Keys.map(k => data[k]?.evening_rating).filter(r => r > 0);
+      const avg7R  = r7.length  ? (r7.reduce((s,x)=>s+x,0)  / r7.length).toFixed(1)  : null;
+      const avg30R = r30.length ? (r30.reduce((s,x)=>s+x,0) / r30.length).toFixed(1) : null;
+
+      // Sleep target vs actual
+      const sleepTargetDays = allKeys.filter(k => data[k]?.sleep_target != null && data[k]?.sleep != null);
+      const sleepTargetMetDays = sleepTargetDays.filter(k => data[k].sleep >= data[k].sleep_target - 0.25);
+      const sleepTargetRate = sleepTargetDays.length >= 3
+        ? Math.round(100 * sleepTargetMetDays.length / sleepTargetDays.length)
+        : null;
+
+      // Journal streak
+      const jStreak = currentStreak('journal');
+      const jRate   = totalDays ? Math.round(100 * jKeys.length / totalDays) : 0;
+
+      const srow = (label, val, sub='') => `<div class="summary-stat-row">
+        <span class="summary-stat-label">${label}</span>
+        <span class="summary-stat-val">${val}${sub ? `<span style="font-size:11px;font-weight:400;color:var(--text-dim);margin-left:5px">${sub}</span>` : ''}</span>
+      </div>`;
+
+      return `<div class="summary-card">
+        <div class="summary-card-title">Check-ins &amp; Reflections</div>
+        ${ciKeys.length ? `
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px">Morning</div>
+          ${srow("Check-ins logged", ciKeys.length, `of ${totalDays} days`)}
+          ${nnRate !== null ? srow("Non-negotiable hit rate", nnRate + "%", `(${nnHitKeys.length}/${nnSetKeys.length})`) : ""}
+        ` : ""}
+        ${evKeys.length ? `
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-top:${ciKeys.length ? 12 : 0}px;margin-bottom:8px">Evening</div>
+          ${srow("Reflections logged", evKeys.length, `of ${totalDays} days`)}
+          ${avg7R  ? srow("Avg rating (7d)",  avg7R  + " / 5") : ""}
+          ${avg30R ? srow("Avg rating (30d)", avg30R + " / 5") : ""}
+          ${sleepTargetRate !== null ? srow("Sleep target met", sleepTargetRate + "%", `(${sleepTargetMetDays.length}/${sleepTargetDays.length} nights)`) : ""}
+        ` : ""}
+        ${jKeys.length ? `
+          <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:12px;margin-bottom:8px">📓 Journal</div>
+          ${srow("Journal rate", jRate + "%", `${jKeys.length} days`)}
+          ${jStreak > 0 ? srow("Current streak", jStreak + (jStreak === 1 ? " day" : " days"), jStreak >= 7 ? "🔥🔥" : jStreak >= 3 ? "🔥" : "") : ""}
+        ` : ""}
       </div>`;
     })()}
 
@@ -2291,6 +2442,189 @@ function stravaAutoSync() {
   // No activities yet — retry every 30 min in case they work out later
   if (Date.now() - lastSync < 30 * 60 * 1000) return;
   stravaSyncToday();
+}
+
+// ── Morning/Evening Check-in ──
+let morningDraft = { nonneg: null, journaled: null };
+let eveningDraft = { rating: 0 };
+
+function setMorningNonneg(goalId) {
+  morningDraft.nonneg = morningDraft.nonneg === goalId ? null : goalId;
+  document.querySelectorAll('.nonneg-chip').forEach(c =>
+    c.classList.toggle('selected', c.dataset.id === morningDraft.nonneg)
+  );
+}
+
+function setMorningJournal(val) {
+  morningDraft.journaled = val;
+  const yes = document.querySelector('.yesno-btn[data-val="yes"]');
+  const no  = document.querySelector('.yesno-btn[data-val="no"]');
+  if (yes) { yes.classList.toggle('sel-yes', val);  yes.classList.toggle('sel-no', !val); }
+  if (no)  { no.classList.toggle('sel-no', val);    no.classList.toggle('sel-yes', !val); }
+}
+
+function setEveningRating(n) {
+  eveningDraft.rating = n;
+  document.querySelectorAll('.star-btn').forEach((s, i) => s.classList.toggle('lit', i < n));
+}
+
+function confirmMorningCheckin() {
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  data[key].morning_checked_in = true;
+  data[key].morning_intention  = (document.getElementById('morning-intention-input')?.value || "").trim();
+  data[key].morning_nonneg     = morningDraft.nonneg;
+  data[key].morning_journaled  = morningDraft.journaled === true;
+  if (data[key].morning_journaled) data[key].journal = true;
+  morningDraft = { nonneg: null, journaled: null };
+  save();
+  renderToday();
+}
+
+function confirmEveningReflection() {
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  data[key].evening_checked_in = true;
+  data[key].evening_rating     = eveningDraft.rating || null;
+  data[key].evening_hard       = (document.getElementById('evening-hard-input')?.value  || "").trim();
+  data[key].evening_proud      = (document.getElementById('evening-proud-input')?.value || "").trim();
+  const sleepVal = document.getElementById('evening-sleep-target')?.value;
+  if (sleepVal) {
+    data[key].sleep_target = parseFloat(sleepVal);
+    if (!data[key].sleep) {
+      data[key].sleep = parseFloat(sleepVal);
+      // Refresh inputs so sleep field shows the value we just set
+    }
+  }
+  eveningDraft = { rating: 0 };
+  save();
+  renderToday();
+}
+
+function renderCheckinSection() {
+  const el = document.getElementById("checkin-section");
+  if (!el) return;
+  // Only show for today
+  if (!isToday(currentDate)) { el.innerHTML = ""; return; }
+
+  const hour = new Date().getHours();
+  const key  = toKey(currentDate);
+  const day  = data[key] || {};
+  let html   = "";
+
+  // ── Morning ──
+  if (day.morning_checked_in) {
+    const nonnegGoal = day.morning_nonneg ? CORE_GOALS.find(g => g.id === day.morning_nonneg) : null;
+    const nonnegHit  = day.morning_nonneg && day[day.morning_nonneg];
+    html += `<div class="checkin-card checkin-done">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px;line-height:1">☀️</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--green)">Morning set ✓</div>
+          ${day.morning_intention
+            ? `<div style="font-size:11px;color:var(--text-dim);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${day.morning_intention.slice(0,60)}"</div>`
+            : ""}
+          ${nonnegGoal
+            ? `<div style="font-size:11px;color:var(--text-mute);margin-top:2px">${nonnegGoal.icon} ${nonnegGoal.label.split('+')[0].trim()} — ${nonnegHit ? '<span style="color:var(--green)">✓ done</span>' : '<span style="color:var(--text-mute)">pending</span>'}</div>`
+            : ""}
+        </div>
+      </div>
+    </div>`;
+  } else if (hour >= 5 && hour < 10) {
+    html += `<div class="checkin-card checkin-morning">
+      <div class="checkin-header">
+        <span class="checkin-icon">☀️</span>
+        <div>
+          <div class="checkin-title">Morning Check-in</div>
+          <div class="checkin-subtitle">Set the tone for today</div>
+        </div>
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label">Today's intention</div>
+        <input class="checkin-input" id="morning-intention-input" type="text"
+          placeholder="What matters most today?" autocomplete="off" autocorrect="off">
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label">Non-negotiable goal</div>
+        <div class="nonneg-row">
+          ${CORE_GOALS.map(g => {
+            const lbl = g.label.split('+')[0].trim().split(' ').slice(0,2).join(' ');
+            return `<div class="nonneg-chip" data-id="${g.id}" onclick="setMorningNonneg('${g.id}')">${g.icon} ${lbl}</div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label">Planning to journal today?</div>
+        <div class="yesno-row">
+          <button class="yesno-btn" data-val="yes" onclick="setMorningJournal(true)">📓 Yes, write</button>
+          <button class="yesno-btn" data-val="no"  onclick="setMorningJournal(false)">Skip today</button>
+        </div>
+      </div>
+      <button class="checkin-btn" onclick="confirmMorningCheckin()">Set intention ✓</button>
+    </div>`;
+  } else if (hour >= 10) {
+    html += `<div class="checkin-card checkin-missed" style="padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-mute)">
+        <span>☀️</span> No morning intention set
+      </div>
+    </div>`;
+  }
+
+  // ── Evening ──
+  if (day.evening_checked_in) {
+    const r = day.evening_rating || 0;
+    const rLabel = r >= 5 ? "excellent!" : r >= 4 ? "great day" : r >= 3 ? "solid" : r >= 2 ? "tough" : r >= 1 ? "rough" : "";
+    html += `<div class="checkin-card checkin-done">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px;line-height:1">🌙</span>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--green)">Evening reflected ✓</div>
+          ${r > 0 ? `<div style="font-size:12px;color:var(--text-dim);margin-top:1px">${'⭐'.repeat(r)} ${rLabel}</div>` : ""}
+        </div>
+      </div>
+    </div>`;
+  } else if (hour >= 19 && hour < 23) {
+    const er = eveningDraft.rating;
+    html += `<div class="checkin-card checkin-evening">
+      <div class="checkin-header">
+        <span class="checkin-icon">🌙</span>
+        <div>
+          <div class="checkin-title checkin-title-eve">Evening Reflection</div>
+          <div class="checkin-subtitle">How did today go?</div>
+        </div>
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label" style="color:#6880a8">Rate your day</div>
+        <div class="star-row">
+          ${[1,2,3,4,5].map(n => `<span class="star-btn${n <= er ? ' lit' : ''}" onclick="setEveningRating(${n})">⭐</span>`).join('')}
+        </div>
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label" style="color:#6880a8">What made today hard?</div>
+        <textarea class="checkin-input" id="evening-hard-input"
+          placeholder="Friction, obstacles, what dragged…" style="border-color:rgba(100,130,200,0.2)"></textarea>
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label" style="color:#6880a8">What are you proud of?</div>
+        <textarea class="checkin-input" id="evening-proud-input"
+          placeholder="Wins, moments, progress made…" style="border-color:rgba(100,130,200,0.2)"></textarea>
+      </div>
+      <div class="checkin-field">
+        <div class="checkin-label" style="color:#6880a8">Sleep target tonight (hrs)</div>
+        <input class="checkin-input" id="evening-sleep-target" type="number" inputmode="decimal"
+          placeholder="8" step="0.5" min="4" max="12" style="width:90px;border-color:rgba(100,130,200,0.2)">
+      </div>
+      <button class="checkin-btn checkin-btn-eve" onclick="confirmEveningReflection()">Log reflection ✓</button>
+    </div>`;
+  } else if (hour >= 23) {
+    html += `<div class="checkin-card checkin-missed" style="padding:10px 14px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-mute)">
+        <span>🌙</span> Evening reflection missed — catch it tomorrow
+      </div>
+    </div>`;
+  }
+
+  el.innerHTML = html;
 }
 
 // ── Init ──
