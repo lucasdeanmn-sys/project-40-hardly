@@ -568,6 +568,105 @@ body {
 @keyframes toastIn  { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
 @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
 
+/* ── Journal ── */
+.journal-filter-bar {
+  display: flex; gap: 6px; margin-bottom: 16px; overflow-x: auto;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.journal-filter-bar::-webkit-scrollbar { display: none; }
+.jfilter-btn {
+  flex-shrink: 0; background: var(--surface); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 20px; padding: 6px 14px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.05em; cursor: pointer;
+  white-space: nowrap; transition: all 0.15s;
+}
+.jfilter-btn.active {
+  background: var(--gold-faint); border-color: var(--gold-dim); color: var(--gold);
+}
+.journal-day-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-bottom: 10px;
+}
+.journal-day-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.journal-day-date { font-size: 14px; font-weight: 700; color: var(--text); }
+.journal-day-dow { font-size: 11px; color: var(--text-mute); margin-top: 1px; }
+.journal-score-badge {
+  font-size: 11px; color: var(--text-dim); text-align: right; line-height: 1.4;
+}
+.journal-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 12px; color: var(--text-dim); margin-bottom: 6px; line-height: 1.4;
+}
+.journal-row-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--text-mute); min-width: 68px; flex-shrink: 0;
+  padding-top: 1px;
+}
+.journal-row-val { flex: 1; }
+.journal-row-val.muted { color: var(--text-mute); font-style: italic; }
+.journal-empty { text-align: center; color: var(--text-mute); font-size: 13px; padding: 40px 0; }
+.ai-analyze-btn {
+  display: block; width: 100%; padding: 14px;
+  background: var(--gold-faint); border: 1px solid var(--gold-dim);
+  color: var(--gold); border-radius: 12px;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; text-align: center; margin-bottom: 16px;
+  transition: background 0.15s;
+}
+.ai-analyze-btn:active { background: rgba(200,169,110,0.18); }
+.ai-analyze-btn:disabled { opacity: 0.5; cursor: default; }
+.ai-loading {
+  text-align: center; padding: 40px 20px; color: var(--text-dim);
+  font-size: 13px;
+}
+.ai-pulse {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--gold); display: inline-block; margin-right: 8px;
+  animation: aiPulse 1.2s ease-in-out infinite;
+}
+@keyframes aiPulse { 0%,100%{opacity:0.3;transform:scale(0.8)} 50%{opacity:1;transform:scale(1.2)} }
+.ai-result-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  border-radius: 12px; padding: 16px; margin-bottom: 12px;
+}
+.ai-result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.ai-result-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--gold);
+}
+.ai-result-meta { font-size: 11px; color: var(--text-mute); }
+.ai-result-body {
+  font-size: 14px; color: var(--text-dim); line-height: 1.65;
+  white-space: pre-wrap;
+}
+.ai-reanalyze-btn {
+  background: none; border: 1px solid var(--border); color: var(--text-mute);
+  border-radius: 8px; padding: 8px 16px; font-size: 12px; font-weight: 600;
+  cursor: pointer; display: block; margin: 8px auto 0;
+  transition: color 0.15s, border-color 0.15s;
+}
+.ai-reanalyze-btn:hover { color: var(--text-dim); border-color: var(--text-mute); }
+.journal-view-toggle {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 3px; overflow: hidden;
+}
+.jview-btn {
+  flex: 1; background: none; border: none; color: var(--text-mute);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;
+  cursor: pointer; padding: 7px 4px; border-radius: 7px; transition: all 0.15s;
+}
+.jview-btn.active {
+  background: var(--surface2); color: var(--text);
+}
+
 /* ── Gamification bar ── */
 .xp-section { padding: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
 .level-coin-row { display: flex; align-items: center; justify-content: space-between; }
@@ -922,6 +1021,11 @@ textarea.checkin-input { resize: none; height: 60px; }
   <div id="summary-content"></div>
 </div>
 
+<!-- Journal tab -->
+<div class="section" id="sec-journal">
+  <div id="journal-content"></div>
+</div>
+
 <!-- Bottom nav -->
 <nav class="nav">
   <button class="nav-btn active" id="nav-today" onclick="switchTab('today')">
@@ -935,6 +1039,10 @@ textarea.checkin-input { resize: none; height: 60px; }
   <button class="nav-btn" id="nav-summary" onclick="switchTab('summary')">
     <span id="nav-icon-summary"></span>
     Summary
+  </button>
+  <button class="nav-btn" id="nav-journal" onclick="switchTab('journal')">
+    <span id="nav-icon-journal"></span>
+    Journal
   </button>
 </nav>
 
@@ -955,6 +1063,7 @@ const PH_ICONS = {
   'crown': `<path d="M252,80a32,32,0,1,0-60,15.45l-20.86,25.66L150.82,74.4a32,32,0,1,0-45.64,0L84.87,121.11,64,95.45a32,32,0,1,0-35,15.78l14,84.06A19.94,19.94,0,0,0,62.78,212H193.22A19.94,19.94,0,0,0,213,195.29l14-84.06A32.05,32.05,0,0,0,252,80Zm-32-8a8,8,0,1,1-8,8A8,8,0,0,1,220,72ZM128,44a8,8,0,1,1-8,8A8,8,0,0,1,128,44ZM36,72a8,8,0,1,1-8,8A8,8,0,0,1,36,72ZM189.83,188H66.17L55.29,122.78l23.4,28.79A12,12,0,0,0,88,156a12.87,12.87,0,0,0,1.63-.11,12,12,0,0,0,9.37-7.1L127.18,84l.82,0,.82,0L157,148.79a12,12,0,0,0,9.37,7.1A12.87,12.87,0,0,0,168,156a12,12,0,0,0,9.31-4.43l23.4-28.79Z"/>`,
   'snowflake': `<path d="M227.65,149.14a12,12,0,0,1-8.79,14.51l-20.67,5.08,5.4,20.16a12,12,0,0,1-23.18,6.22l-7.29-27.2L140,148.78V187l20.48,20.48a12,12,0,0,1-17,17L128,209l-15.51,15.52a12,12,0,0,1-17-17L116,187V148.78L82.88,167.91l-7.29,27.2a12,12,0,0,1-23.18-6.22l5.4-20.16-20.67-5.08a12,12,0,1,1,5.72-23.3l27.89,6.85L104,128,70.75,108.8l-27.89,6.85A11.8,11.8,0,0,1,40,116a12,12,0,0,1-2.85-23.65l20.67-5.08-5.4-20.16a12,12,0,0,1,23.18-6.22l7.29,27.2L116,107.21V69L95.52,48.48a12,12,0,0,1,17-17L128,47l15.51-15.52a12,12,0,1,1,17,17L140,69v38.24l33.12-19.12,7.29-27.2a12,12,0,0,1,23.18,6.22l-5.4,20.16,20.67,5.08A12,12,0,0,1,216,116a11.8,11.8,0,0,1-2.87-.35l-27.89-6.85L152,128l33.25,19.2,27.89-6.85A12,12,0,0,1,227.65,149.14Z"/>`,
   'check-circle': `<path d="M176.49,95.51a12,12,0,0,1,0,17l-56,56a12,12,0,0,1-17,0l-24-24a12,12,0,1,1,17-17L112,143l47.51-47.52A12,12,0,0,1,176.49,95.51ZM236,128A108,108,0,1,1,128,20,108.12,108.12,0,0,1,236,128Zm-24,0a84,84,0,1,0-84,84A84.09,84.09,0,0,0,212,128Z"/>`,
+  'book-bookmark': `<path d="M208,20H72A36,36,0,0,0,36,56V224a12,12,0,0,0,12,12H192a12,12,0,0,0,0-24H60v-4a12,12,0,0,1,12-12H208a12,12,0,0,0,12-12V32A12,12,0,0,0,208,20ZM120,44h36v59l-10.51-8.41a12,12,0,0,0-15,0L120,103Zm76,128H72a35.59,35.59,0,0,0-12,2.06V56A12,12,0,0,1,72,44H96v84a12,12,0,0,0,19.5,9.37l22.49-18,22.51,18A12,12,0,0,0,180,128V44h16Z"/>`,
   'thermometer': `<path d="M212,52a32,32,0,1,0,32,32A32,32,0,0,0,212,52Zm0,40a8,8,0,1,1,8-8A8,8,0,0,1,212,92ZM160,56A52,52,0,0,0,56,56v94.69a64,64,0,1,0,104,0ZM108,228a40,40,0,0,1-30.91-65.39A12,12,0,0,0,80,154.78V56a28,28,0,0,1,56,0v98.77a12,12,0,0,0,2.77,7.68A40,40,0,0,1,108,228Zm24-40a24,24,0,1,1-36-20.78V92a12,12,0,0,1,24,0v75.22A24,24,0,0,1,132,188Z"/>`,
   'skull': `<path d="M116,132a24,24,0,1,1-24-24A24,24,0,0,1,116,132Zm48-24a24,24,0,1,0,24,24A24,24,0,0,0,164,108Zm72,8c0,29.85-13.05,57.78-36,77.52V216a20,20,0,0,1-20,20H76a20,20,0,0,1-20-20V193.52c-23-19.74-36-47.67-36-77.52C20,58.65,68.45,12,128,12S236,58.65,236,116Zm-24,0c0-44.11-37.68-80-84-80S44,71.89,44,116c0,24.31,11.41,47,31.31,62.3A12,12,0,0,1,80,187.82V212H96V192a12,12,0,0,1,24,0v20h16V192a12,12,0,0,1,24,0v20h16V187.82a12,12,0,0,1,4.69-9.51C200.59,163,212,140.31,212,116Z"/>`,
   'trophy': `<path d="M232,60H212V48a12,12,0,0,0-12-12H56A12,12,0,0,0,44,48V60H24A20,20,0,0,0,4,80V96a44.05,44.05,0,0,0,44,44h.77A84.18,84.18,0,0,0,116,195.15V212H96a12,12,0,0,0,0,24h64a12,12,0,0,0,0-24H140V195.11c30.94-4.51,56.53-26.2,67-55.11h1a44.05,44.05,0,0,0,44-44V80A20,20,0,0,0,232,60ZM28,96V84H44v28c0,1.21,0,2.41.09,3.61A20,20,0,0,1,28,96Zm160,15.1c0,33.33-26.71,60.65-59.54,60.9A60,60,0,0,1,68,112V60H188ZM228,96a20,20,0,0,1-16.12,19.62c.08-1.5.12-3,.12-4.52V84h16Z"/>`,
@@ -2298,12 +2407,322 @@ function renderSummary() {
 // ── Tab switching ──
 function switchTab(tab) {
   activeTab = tab;
-  ["today","week","summary"].forEach(t => {
+  ["today","week","summary","journal"].forEach(t => {
     document.getElementById(`sec-${t}`).classList.toggle("active", t === tab);
     document.getElementById(`nav-${t}`).classList.toggle("active", t === tab);
   });
   if (tab === "week")    renderWeek();
   if (tab === "summary") { renderSummary(); initContribTooltip(); }
+  if (tab === "journal") renderJournal();
+}
+
+// ── Journal ──
+let journalView   = "log";   // "log" | "ai"
+let journalFilter = "all";   // "all" | "perfect" | "low" | "missed"
+let aiCache = null; // { text, timestamp }
+
+function getAnthropicKey() { return localStorage.getItem('anthropic_api_key') || ''; }
+
+function renderJournal() {
+  const el = document.getElementById("journal-content");
+  if (!el) return;
+  // Load cached AI result from localStorage
+  if (!aiCache) {
+    try { aiCache = JSON.parse(localStorage.getItem('p40_ai_cache') || 'null'); } catch {}
+  }
+  el.innerHTML = buildJournalHTML();
+  // Inject icon
+  const iconEl = document.getElementById("journal-section-icon");
+  if (iconEl) iconEl.innerHTML = ph("book-bookmark", 20);
+}
+
+function buildJournalHTML() {
+  const toggleHTML = `
+    <div class="journal-view-toggle">
+      <button class="jview-btn ${journalView === 'log' ? 'active' : ''}" onclick="setJournalView('log')">Log</button>
+      <button class="jview-btn ${journalView === 'ai' ? 'active' : ''}" onclick="setJournalView('ai')">AI Analysis</button>
+    </div>`;
+
+  if (journalView === 'ai') return toggleHTML + buildAIView();
+  return toggleHTML + buildLogView();
+}
+
+function setJournalView(v) {
+  journalView = v;
+  renderJournal();
+}
+
+function setJournalFilter(f) {
+  journalFilter = f;
+  renderJournal();
+}
+
+function buildLogView() {
+  const FILTERS = [
+    { id: "all",     label: "All Days" },
+    { id: "perfect", label: "Perfect Core" },
+    { id: "low",     label: "Low Rating" },
+    { id: "missed",  label: "Missed Intention" },
+  ];
+
+  const filterBar = `<div class="journal-filter-bar">
+    ${FILTERS.map(f => `<button class="jfilter-btn ${journalFilter === f.id ? 'active' : ''}" onclick="setJournalFilter('${f.id}')">${f.label}</button>`).join('')}
+  </div>`;
+
+  // Collect days with ANY logged data, reverse-chrono
+  const allKeys = Object.keys(data)
+    .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k))
+    .sort((a, b) => b.localeCompare(a));
+
+  const filteredKeys = allKeys.filter(k => {
+    const d = data[k];
+    if (!d) return false;
+    // Must have at least morning or evening check-in, OR some goals checked
+    const hasMorning  = d.morning_checked_in;
+    const hasEvening  = d.evening_checked_in;
+    const hasGoals    = GOALS.some(g => d[g.id]);
+    if (!hasMorning && !hasEvening && !hasGoals) return false;
+    // Apply filter
+    if (journalFilter === 'perfect') {
+      return CORE_GOALS.every(g => d[g.id]);
+    }
+    if (journalFilter === 'low') {
+      return d.evening_rating && d.evening_rating <= 2;
+    }
+    if (journalFilter === 'missed') {
+      return d.morning_nonneg && !d[d.morning_nonneg];
+    }
+    return true;
+  });
+
+  if (!filteredKeys.length) {
+    return filterBar + `<div class="journal-empty">No entries yet.<br>Complete check-ins on the Today tab.</div>`;
+  }
+
+  const cards = filteredKeys.map(k => buildDayCard(k)).join('');
+  return filterBar + cards;
+}
+
+function buildDayCard(key) {
+  const d    = data[key] || {};
+  const date = new Date(key + 'T12:00:00');
+  const dow  = date.toLocaleDateString('en-US', { weekday: 'long' });
+  const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  const coreScore  = CORE_GOALS.filter(g => d[g.id]).length;
+  const bonusScore = BONUS_GOALS.filter(g => d[g.id]).length;
+  const scoreStr   = `Core: ${coreScore}/3 · Bonus: ${bonusScore}/6`;
+
+  let rows = '';
+
+  // Morning intention + nonneg
+  if (d.morning_checked_in) {
+    const intention = d.morning_intention || '';
+    const nonneg    = d.morning_nonneg ? CORE_GOALS.find(g => g.id === d.morning_nonneg) : null;
+    const nonnegHit = d.morning_nonneg && d[d.morning_nonneg];
+    const nonnegHtml = nonneg
+      ? ` <span style="color:${nonnegHit ? 'var(--green)' : 'var(--red)'}">${nonnegHit ? '✓' : '✗'} ${nonneg.label}</span>`
+      : '';
+    if (intention || nonneg) {
+      rows += `<div class="journal-row">
+        <span class="journal-row-label">Intention</span>
+        <span class="journal-row-val">${intention ? `"${intention}"` : ''}${nonnegHtml}</span>
+      </div>`;
+    }
+    // Journal
+    rows += `<div class="journal-row">
+      <span class="journal-row-label">Journaled</span>
+      <span class="journal-row-val ${d.morning_journaled ? '' : 'muted'}">${d.morning_journaled ? ph('check-circle', 13) + ' Yes' : 'No'}</span>
+    </div>`;
+  }
+
+  // Evening rating
+  if (d.evening_checked_in && d.evening_rating) {
+    const r = d.evening_rating;
+    const stars = Array.from({length:5}, (_,i) =>
+      `<span style="color:${i<r ? 'var(--gold)' : 'var(--border)'}">${ph('star', 12)}</span>`
+    ).join('');
+    rows += `<div class="journal-row">
+      <span class="journal-row-label">Evening</span>
+      <span class="journal-row-val" style="display:flex;align-items:center;gap:3px">${stars}</span>
+    </div>`;
+  }
+
+  // Hard / proud
+  if (d.evening_hard || d.evening_proud) {
+    if (d.evening_hard) {
+      rows += `<div class="journal-row">
+        <span class="journal-row-label">Hard</span>
+        <span class="journal-row-val ${d.evening_hard ? '' : 'muted'}">${d.evening_hard || '—'}</span>
+      </div>`;
+    }
+    if (d.evening_proud) {
+      rows += `<div class="journal-row">
+        <span class="journal-row-label">Proud of</span>
+        <span class="journal-row-val">${d.evening_proud}</span>
+      </div>`;
+    }
+  }
+
+  // Sleep
+  if (d.sleep != null) {
+    const h = Math.floor(d.sleep);
+    const m = Math.round((d.sleep - h) * 60);
+    const dot = sleepDot(d.sleep, key);
+    rows += `<div class="journal-row">
+      <span class="journal-row-label">Sleep</span>
+      <span class="journal-row-val" style="display:flex;align-items:center;gap:4px">${h}h${m > 0 ? ` ${m}m` : ''}${dot}</span>
+    </div>`;
+  }
+
+  // Protein
+  if (d.protein != null) {
+    const pct = Math.min(100, Math.round(100 * d.protein / PROTEIN_TARGET));
+    const color = d.protein >= PROTEIN_TARGET ? 'var(--green)' : d.protein >= 100 ? 'var(--orange)' : 'var(--text-mute)';
+    rows += `<div class="journal-row">
+      <span class="journal-row-label">Protein</span>
+      <span class="journal-row-val" style="color:${color}">${Math.round(d.protein)}g <span style="color:var(--text-mute);font-size:11px">/ ${PROTEIN_TARGET}g (${pct}%)</span></span>
+    </div>`;
+  }
+
+  return `<div class="journal-day-card">
+    <div class="journal-day-header">
+      <div>
+        <div class="journal-day-date">${dateStr}</div>
+        <div class="journal-day-dow">${dow}</div>
+      </div>
+      <div class="journal-score-badge">${scoreStr}</div>
+    </div>
+    ${rows || '<div style="font-size:12px;color:var(--text-mute)">No check-in data</div>'}
+  </div>`;
+}
+
+function buildAIView() {
+  const hasKey = !!getAnthropicKey();
+  const btnLabel = aiCache ? 'Re-analyze' : 'Analyze with AI';
+
+  let resultHTML = '';
+  if (aiCache) {
+    const ago = formatAgo(Date.now() - aiCache.timestamp);
+    resultHTML = `<div class="ai-result-card">
+      <div class="ai-result-header">
+        <span class="ai-result-title">${ph('book-bookmark', 13)} Coach Analysis</span>
+        <span class="ai-result-meta">Last analyzed ${ago}</span>
+      </div>
+      <div class="ai-result-body">${escHtml(aiCache.text)}</div>
+    </div>`;
+  }
+
+  if (!hasKey) {
+    return `${resultHTML}<div style="text-align:center;padding:32px 16px">
+      <div style="font-size:13px;color:var(--text-mute);line-height:1.6">
+        To enable AI analysis, set your Anthropic API key in the browser console:<br>
+        <code style="color:var(--gold);font-size:11px">localStorage.setItem('anthropic_api_key', 'sk-ant-...')</code>
+      </div>
+    </div>`;
+  }
+
+  return `<button class="ai-analyze-btn" id="ai-btn" onclick="runAIAnalysis()">${btnLabel}</button>${resultHTML}`;
+}
+
+function formatAgo(ms) {
+  if (ms < 60000)     return 'just now';
+  if (ms < 3600000)   return `${Math.floor(ms / 60000)}m ago`;
+  if (ms < 86400000)  return `${Math.floor(ms / 3600000)}h ago`;
+  return `${Math.floor(ms / 86400000)}d ago`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function runAIAnalysis() {
+  const btn = document.getElementById("ai-btn");
+  if (btn) { btn.disabled = true; btn.textContent = "Analyzing…"; }
+
+  const el = document.getElementById("journal-content");
+  if (el) {
+    el.innerHTML = buildJournalHTML().replace(
+      'class="ai-analyze-btn"',
+      'class="ai-analyze-btn" disabled'
+    );
+    // Show loading state below button
+    const loadDiv = document.createElement('div');
+    loadDiv.className = 'ai-loading';
+    loadDiv.innerHTML = `<span class="ai-pulse"></span>Analyzing your journey…`;
+    el.appendChild(loadDiv);
+  }
+
+  try {
+    const payload = buildAnalysisPayload();
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': getAnthropicKey(),
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a performance coach analyzing data from someone tracking daily habits as part of a personal challenge called "Project 40 Hardly" — they are working toward their 40th birthday on September 28, 2026. They track three core goals (Coach Workout, Nutrition, Reading) and six bonus goals (Morning Walk, Yoga/Stretching, Pee Pushups, Core Work, Morning Journal, Protein 130g+). They also track sleep hours, protein intake, morning intentions, and evening reflections. Be direct, honest, and motivating — like a coach who has seen the data and is speaking frankly. No bullet lists — write flowing paragraphs as if talking to them.`,
+        messages: [{
+          role: 'user',
+          content: `Here is my last 30 days of data:\n\n${payload}\n\nAnalyze my patterns. Cover: top 3 patterns or correlations, what my best days have in common, biggest recurring obstacles from the "what made today hard" entries, whether my sleep predicts goal completion, which goals I declare as non-negotiable but don't hit, one specific actionable recommendation, and an honest assessment of my trajectory toward September 28.`,
+        }],
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
+    }
+
+    const json = await res.json();
+    const text = json.content?.[0]?.text || '';
+
+    aiCache = { text, timestamp: Date.now() };
+    localStorage.setItem('p40_ai_cache', JSON.stringify(aiCache));
+    renderJournal();
+  } catch (e) {
+    const el2 = document.getElementById("journal-content");
+    if (el2) {
+      el2.innerHTML = buildJournalHTML();
+      const errDiv = document.createElement('div');
+      errDiv.style.cssText = 'color:var(--red);font-size:13px;text-align:center;padding:16px';
+      errDiv.textContent = `Analysis failed: ${e.message}`;
+      el2.appendChild(errDiv);
+    }
+  }
+}
+
+function buildAnalysisPayload() {
+  const allKeys = Object.keys(data)
+    .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k))
+    .sort((a, b) => b.localeCompare(a))
+    .slice(0, 30);
+
+  return allKeys.map(k => {
+    const d = data[k] || {};
+    const coreScore  = CORE_GOALS.filter(g => d[g.id]).length;
+    const bonusScore = BONUS_GOALS.filter(g => d[g.id]).length;
+    const nonneg     = d.morning_nonneg ? GOALS.find(g => g.id === d.morning_nonneg)?.label : null;
+    const nonnegHit  = d.morning_nonneg ? !!d[d.morning_nonneg] : null;
+    const parts = [
+      `Date: ${k}`,
+      `Core: ${coreScore}/3 (${CORE_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
+      `Bonus: ${bonusScore}/6 (${BONUS_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
+    ];
+    if (nonneg)          parts.push(`Non-negotiable: ${nonneg} — ${nonnegHit ? 'HIT' : 'MISSED'}`);
+    if (d.morning_intention) parts.push(`Intention: "${d.morning_intention}"`);
+    if (d.evening_rating)    parts.push(`Evening rating: ${d.evening_rating}/5`);
+    if (d.evening_hard)      parts.push(`Hard: "${d.evening_hard}"`);
+    if (d.evening_proud)     parts.push(`Proud: "${d.evening_proud}"`);
+    if (d.sleep != null)     parts.push(`Sleep: ${d.sleep}h`);
+    if (d.protein != null)   parts.push(`Protein: ${Math.round(d.protein)}g`);
+    return parts.join('\n');
+  }).join('\n\n---\n\n');
 }
 
 // ── Strava ──
@@ -2732,6 +3151,7 @@ document.getElementById("nav-icon-summary").innerHTML = ph("chart-bar", 22);
 document.getElementById("weight-card-icon").innerHTML   = ph("scales", 18);
 document.getElementById("sleep-card-icon").innerHTML    = ph("moon", 18);
 document.getElementById("protein-tracker-icon").innerHTML = ph("fork-knife", 18);
+document.getElementById("nav-icon-journal").innerHTML  = ph("book-bookmark", 22);
 
 load();
 applyTheme();
