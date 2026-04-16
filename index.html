@@ -10,835 +10,665 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icons/icon-180.png">
 <title>Project 40 Hardly</title>
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/index.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #09090c;
-    --surface: rgba(255,255,255,0.04);
-    --surface2: rgba(255,255,255,0.07);
-    --border: rgba(200,169,110,0.15);
-    --gold: #c8a96e;
-    --gold-dim: rgba(200,169,110,0.4);
-    --gold-faint: rgba(200,169,110,0.08);
-    --text: #ede8de;
-    --text-dim: #8a7d68;
-    --text-mute: #3d3528;
-    --green: #5cb87a;
-    --green-faint: rgba(92,184,122,0.12);
-    --red: #c06060;
+    --bg: #000000;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222222;
+    --gold: #C8A96E;
+    --gold-dim: rgba(200,169,110,0.45);
+    --gold-faint: rgba(200,169,110,0.09);
+    --text: #FFFFFF;
+    --text-dim: #888888;
+    --text-mute: #333333;
+    --green: #4CAF50;
+    --green-faint: rgba(76,175,80,0.12);
+    --red: #E53935;
+    --blue: #1E88E5;
+    --orange: #FF6D00;
     --nav-h: 64px;
   }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    min-height: 100vh;
-    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
-    overscroll-behavior: none;
-  }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height: 100vh;
+  padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  overscroll-behavior: none;
+}
 
-  /* ── Header ── */
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: rgba(9,9,12,0.96);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 20px 10px;
-    padding-top: calc(14px + env(safe-area-inset-top));
-  }
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  .app-title {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--gold);
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .countdown-badge { text-align: right; }
-  .countdown-days { font-size: 22px; font-weight: 700; color: var(--gold); line-height: 1; }
-  .countdown-label { font-size: 10px; color: var(--text-dim); letter-spacing: 0.06em; text-transform: uppercase; }
+/* ── Header ── */
+.header {
+  position: sticky; top: 0; z-index: 10;
+  background: rgba(0,0,0,0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px 10px;
+  padding-top: calc(14px + env(safe-area-inset-top));
+}
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.app-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-mute);
+  display: flex; align-items: center; gap: 8px;
+}
+.countdown-badge { text-align: right; }
+.countdown-days { font-size: 42px; font-weight: 900; color: var(--text); line-height: 1; letter-spacing: -0.02em; }
+.countdown-label { font-size: 10px; color: var(--text-mute); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 1px; }
+.date-nav {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-top: 10px;
+}
+.date-nav button {
+  background: none; border: none; color: var(--text-mute);
+  font-size: 20px; cursor: pointer; padding: 6px 14px;
+  border-radius: 8px; transition: color 0.15s;
+  min-width: 44px; min-height: 44px; touch-action: manipulation;
+  display: flex; align-items: center; justify-content: center;
+}
+.date-nav button:hover { color: var(--text); }
+.date-nav button:disabled { opacity: 0.15; cursor: default; }
+.date-display { font-size: 15px; font-weight: 600; color: var(--text); }
+.date-today-dot {
+  display: inline-block; width: 6px; height: 6px;
+  background: var(--gold); border-radius: 50%;
+  margin-left: 6px; vertical-align: middle;
+}
 
-  .date-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 10px;
-  }
-  .date-nav button {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 6px 14px;
-    border-radius: 8px;
-    transition: color 0.15s;
-    min-width: 44px;
-    min-height: 44px;
-    touch-action: manipulation;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .date-nav button:hover { color: var(--gold); }
-  .date-nav button:disabled { opacity: 0.2; cursor: default; }
-  .date-display { font-size: 15px; font-weight: 500; color: var(--text); }
-  .date-today-dot {
-    display: inline-block;
-    width: 6px; height: 6px;
-    background: var(--gold);
-    border-radius: 50%;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
+/* ── Nav ── */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+  background: rgba(0,0,0,0.98);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  display: flex; z-index: 10;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-btn {
+  flex: 1; background: none; border: none;
+  color: var(--text-mute); font-size: 10px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 5px;
+  transition: color 0.15s; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-btn.active { color: var(--text); }
+.nav-btn svg { display: block; }
+.nav-btn i { font-size: 22px; line-height: 1; }
 
-  /* ── Nav ── */
-  .nav {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: calc(var(--nav-h) + env(safe-area-inset-bottom));
-    background: rgba(9,9,12,0.97);
-    backdrop-filter: blur(12px);
-    border-top: 1px solid var(--border);
-    display: flex;
-    z-index: 10;
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .nav-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    transition: color 0.15s;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .nav-btn.active { color: var(--gold); }
-  .nav-btn svg { display: block; }
+/* ── Sections ── */
+.section { display: none; padding: 20px 16px; }
+.section.active { display: block; }
 
-  /* ── Sections ── */
-  .section { display: none; padding: 20px 16px; }
-  .section.active { display: block; }
+/* ── Score ring ── */
+.score-wrap {
+  display: flex; align-items: center;
+  justify-content: center; padding: 20px 0 16px;
+}
+.ring-container { position: relative; width: 110px; height: 110px; }
+.ring-container svg { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: #1a1a1a; stroke-width: 6; }
+.ring-fill {
+  fill: none; stroke: var(--text-mute); stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.45s cubic-bezier(0.4,0,0.2,1), stroke 0.3s ease;
+}
+.ring-fill.ring-active { stroke: var(--green); }
+.ring-fill.ring-perfect { stroke: var(--gold); }
+.ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ring-score { font-size: 32px; font-weight: 900; color: var(--text); line-height: 1; }
+.ring-total { font-size: 12px; color: var(--text-mute); font-weight: 600; letter-spacing: 0.04em; margin-top: 1px; }
 
-  /* ── Score ring ── */
-  .score-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 0 16px;
-  }
-  .ring-container { position: relative; width: 96px; height: 96px; }
-  .ring-container svg { transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: var(--text-mute); stroke-width: 5; }
-  .ring-fill { fill: none; stroke: var(--gold); stroke-width: 5; stroke-linecap: round; transition: stroke-dashoffset 0.4s ease; }
-  .ring-text {
-    position: absolute; inset: 0;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-  }
-  .ring-score { font-size: 24px; font-weight: 700; color: var(--gold); line-height: 1; }
-  .ring-total { font-size: 11px; color: var(--text-dim); }
+/* ── Goal cards ── */
+.goal-group-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-mute); margin: 20px 0 8px;
+}
+.goal-card {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid transparent;
+  border-radius: 12px; padding: 15px 14px;
+  margin-bottom: 8px; cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+  user-select: none; -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.goal-card:active { transform: scale(0.985); }
+.goal-card.checked {
+  background: rgba(76,175,80,0.08);
+  border-color: var(--border);
+  border-left-color: var(--green);
+}
+.goal-card.checked .goal-label { color: var(--green); }
+.goal-icon {
+  font-size: 20px; width: 26px; text-align: center;
+  flex-shrink: 0; color: var(--text-mute); line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.goal-card.checked .goal-icon { color: var(--green); }
+.goal-text { flex: 1; min-width: 0; }
+.goal-label { font-size: 15px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; transition: color 0.12s; }
+.goal-sub { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+.goal-check {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s, border-color 0.12s;
+  flex-shrink: 0;
+}
+.goal-card.checked .goal-check { background: var(--green); border-color: var(--green); }
+.goal-check svg { display: none; }
+.goal-card.checked .goal-check svg { display: block; }
 
-  /* ── Goal cards ── */
-  .goal-group-label {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--text-dim); margin: 20px 0 8px;
-  }
-  .goal-card {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    background: var(--surface);
-    border: 1px solid transparent;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 8px;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
-  }
-  .goal-card:active { transform: scale(0.98); }
-  .goal-card.checked { background: var(--green-faint); border-color: rgba(92,184,122,0.25); }
-  .goal-icon { font-size: 22px; width: 28px; text-align: center; flex-shrink: 0; }
-  .goal-text { flex: 1; min-width: 0; }
-  .goal-label { font-size: 15px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 5px; }
-  .goal-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
-  .goal-check {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--text-mute);
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s, border-color 0.15s;
-    flex-shrink: 0;
-  }
-  .goal-card.checked .goal-check { background: var(--green); border-color: var(--green); }
-  .goal-check svg { display: none; }
-  .goal-card.checked .goal-check svg { display: block; }
+/* ── Bonus goals ── */
+.bonus-section-label { display: flex; align-items: center; gap: 8px; }
+.bonus-label-xp {
+  font-size: 9px; font-weight: 700; color: var(--gold);
+  background: var(--gold-faint); border-radius: 4px;
+  padding: 2px 6px; letter-spacing: 0.04em; text-transform: none;
+}
+.goal-card.bonus-goal {
+  padding: 11px 14px; opacity: 0.7;
+}
+.goal-card.bonus-goal .goal-icon { font-size: 17px; }
+.goal-card.bonus-goal .goal-label { font-size: 14px; font-weight: 500; }
+.goal-card.bonus-checked {
+  background: var(--gold-faint); border-color: var(--border);
+  border-left-color: var(--gold); opacity: 1;
+}
+.goal-card.bonus-checked .goal-label { color: var(--gold); }
+.goal-card.bonus-checked .goal-icon { color: var(--gold); }
+.goal-card.bonus-checked .goal-check { background: var(--gold); border-color: var(--gold); }
+.bonus-xp-chip {
+  font-size: 10px; font-weight: 700; color: var(--gold);
+  background: var(--gold-faint); border-radius: 5px;
+  padding: 2px 6px; flex-shrink: 0; margin-left: auto;
+}
 
-  /* ── Weight & Note ── */
-  .field-group { margin-top: 20px; }
-  .field-label {
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-dim); margin-bottom: 8px;
-  }
-  .field-label-row {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 8px;
-  }
-  .field-label-row .field-label { margin-bottom: 0; }
-  .metric-dot { font-size: 13px; line-height: 1; }
-  .metric-input { width: 120px; }
-  .protein-bar-bg {
-    height: 4px; background: var(--text-mute);
-    border-radius: 2px; overflow: hidden; margin-top: 8px;
-  }
-  .protein-bar-fill {
-    height: 100%; border-radius: 2px;
-    transition: width 0.3s ease, background 0.3s ease;
-  }
-  .protein-bar-labels {
-    display: flex; justify-content: space-between;
-    font-size: 10px; color: var(--text-mute); margin-top: 3px;
-  }
-  /* ── Week metrics row ── */
-  .week-metrics { margin-top: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .week-metrics-table { width: 100%; border-collapse: collapse; }
-  .week-metrics-table td {
-    text-align: center; font-size: 11px;
-    padding: 3px 2px; color: var(--text-dim);
-  }
-  .week-metrics-table td:first-child {
-    text-align: left; font-size: 10px;
-    color: var(--text-mute); padding-left: 2px; white-space: nowrap;
-  }
-  .mv-red    { color: var(--red)    !important; font-weight: 600; }
-  .mv-yellow { color: #c8a020      !important; font-weight: 600; }
-  .mv-orange { color: #e07840      !important; font-weight: 600; }
-  .mv-green  { color: var(--green) !important; font-weight: 600; }
-  .field-input {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 16px;
-    padding: 14px;
-    outline: none;
-    transition: border-color 0.15s;
-    font-family: inherit;
-    -webkit-appearance: none;
-  }
-  .field-input:focus { border-color: var(--gold-dim); }
-  .weight-input { width: 140px; }
-  textarea.field-input { resize: none; height: 80px; }
+/* ── Field inputs ── */
+.field-group { margin-top: 20px; }
+.field-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px;
+}
+.field-label-row {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 8px;
+}
+.field-label-row .field-label { margin-bottom: 0; }
+.metric-dot { font-size: 13px; line-height: 1; }
+.metric-input { width: 120px; }
+.protein-bar-bg {
+  height: 3px; background: var(--border);
+  border-radius: 2px; overflow: hidden; margin-top: 8px;
+}
+.protein-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease, background 0.3s ease; }
+.protein-bar-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--text-mute); margin-top: 3px;
+}
+.field-input {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-size: 16px; padding: 13px 14px;
+  outline: none; transition: border-color 0.15s; font-family: inherit;
+  -webkit-appearance: none;
+}
+.field-input:focus { border-color: #444; }
+.weight-input { width: 140px; }
+textarea.field-input { resize: none; height: 80px; }
 
-  /* ── Week view ── */
-  .week-nav {
-    display: flex; align-items: center;
-    justify-content: space-between; margin-bottom: 16px;
-  }
-  .week-nav button {
-    background: none; border: none;
-    color: var(--text-dim); font-size: 20px;
-    cursor: pointer; padding: 8px 14px;
-    border-radius: 8px; min-width: 44px; min-height: 44px;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  .week-nav button:hover { color: var(--gold); }
-  .week-label { font-size: 14px; color: var(--text); font-weight: 500; }
+/* ── Week view ── */
+.week-nav {
+  display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 16px;
+}
+.week-nav button {
+  background: none; border: none; color: var(--text-mute);
+  font-size: 20px; cursor: pointer; padding: 8px 14px;
+  border-radius: 8px; min-width: 44px; min-height: 44px;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: color 0.15s;
+}
+.week-nav button:hover { color: var(--text); }
+.week-label { font-size: 14px; color: var(--text); font-weight: 600; }
+.week-grid { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.week-table { width: 100%; border-collapse: collapse; }
+.week-table th {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-mute);
+  padding: 4px 0 8px; text-align: center;
+}
+.week-table th.goal-th { text-align: left; padding-left: 4px; max-width: 100px; }
+.week-table td { padding: 3px 2px; text-align: center; vertical-align: middle; }
+.week-table td.goal-name-td {
+  text-align: left; font-size: 11px; color: var(--text-mute);
+  padding-left: 4px; white-space: nowrap;
+  max-width: 100px; overflow: hidden; text-overflow: ellipsis;
+}
+.heat-cell {
+  width: 32px; height: 32px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; cursor: pointer; transition: transform 0.1s;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+}
+.heat-cell:active { transform: scale(0.9); }
+.heat-on { background: var(--green); color: #fff; }
+.heat-off { background: var(--surface2); color: var(--text-mute); }
+.heat-today { outline: 2px solid var(--gold); outline-offset: 1px; }
+.week-scores {
+  margin-top: 16px; display: grid;
+  grid-template-columns: repeat(7, 1fr); gap: 4px;
+}
+.day-score-col { text-align: center; }
+.day-score-bar-wrap {
+  height: 60px; display: flex;
+  align-items: flex-end; justify-content: center; margin-bottom: 4px;
+}
+.day-score-bar {
+  width: 20px; border-radius: 4px 4px 0 0;
+  background: var(--surface2); transition: height 0.3s ease; min-height: 2px;
+}
+.day-score-bar.has-score { background: var(--text-mute); }
+.day-score-bar.perfect { background: var(--gold); }
+.day-score-num { font-size: 10px; color: var(--text-mute); }
+.day-score-day { font-size: 9px; color: var(--text-mute); letter-spacing: 0.04em; text-transform: uppercase; }
+.week-metrics { margin-top: 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.week-metrics-table { width: 100%; border-collapse: collapse; }
+.week-metrics-table td { text-align: center; font-size: 11px; padding: 3px 2px; color: var(--text-dim); }
+.week-metrics-table td:first-child { text-align: left; font-size: 10px; color: var(--text-mute); padding-left: 2px; white-space: nowrap; }
+.mv-red    { color: var(--red)    !important; font-weight: 700; }
+.mv-yellow { color: #F9A825      !important; font-weight: 700; }
+.mv-orange { color: var(--orange) !important; font-weight: 700; }
+.mv-green  { color: var(--green)  !important; font-weight: 700; }
 
-  .week-grid { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .week-table { width: 100%; border-collapse: collapse; }
-  .week-table th {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase;
-    color: var(--text-dim); padding: 4px 0 8px; text-align: center;
-  }
-  .week-table th.goal-th { text-align: left; padding-left: 4px; max-width: 100px; }
-  .week-table td { padding: 3px 2px; text-align: center; vertical-align: middle; }
-  .week-table td.goal-name-td {
-    text-align: left; font-size: 11px; color: var(--text-dim);
-    padding-left: 4px; white-space: nowrap;
-    max-width: 100px; overflow: hidden; text-overflow: ellipsis;
-  }
-  .heat-cell {
-    width: 32px; height: 32px; border-radius: 6px;
-    display: inline-flex; align-items: center; justify-content: center;
-    font-size: 11px; cursor: pointer; transition: transform 0.1s;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-  }
-  .heat-cell:active { transform: scale(0.9); }
-  .heat-on { background: var(--green); color: #fff; }
-  .heat-off { background: var(--surface2); color: var(--text-mute); }
-  .heat-today { outline: 2px solid var(--gold); outline-offset: 1px; }
+/* ── Summary ── */
+.summary-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px; margin-bottom: 12px;
+}
+.summary-card-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--text-mute); margin-bottom: 14px;
+}
+.summary-stat-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 7px 0; border-bottom: 1px solid var(--border);
+}
+.summary-stat-row:last-child { border-bottom: none; }
+.summary-stat-label { font-size: 13px; color: var(--text-dim); }
+.summary-stat-val { font-size: 15px; font-weight: 700; color: var(--text); }
+.summary-stat-val.gold { color: var(--gold); }
+.streak-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.streak-row:last-child { border-bottom: none; }
+.streak-icon { font-size: 16px; width: 22px; color: var(--text-mute); display: flex; align-items: center; }
+.streak-name { font-size: 13px; color: var(--text-dim); flex: 1; }
+.streak-val { font-size: 14px; font-weight: 700; color: var(--gold); }
+.progress-bar-wrap { margin-top: 8px; }
+.progress-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--text-dim); margin-bottom: 4px;
+}
+.progress-bar-bg { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.4s ease; }
 
-  .week-scores {
-    margin-top: 16px;
-    display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;
-  }
-  .day-score-col { text-align: center; }
-  .day-score-bar-wrap {
-    height: 60px; display: flex;
-    align-items: flex-end; justify-content: center; margin-bottom: 4px;
-  }
-  .day-score-bar {
-    width: 20px; border-radius: 4px 4px 0 0;
-    background: var(--gold-dim); transition: height 0.3s ease; min-height: 2px;
-  }
-  .day-score-bar.perfect { background: var(--gold); }
-  .day-score-num { font-size: 10px; color: var(--text-dim); }
-  .day-score-day { font-size: 9px; color: var(--text-mute); letter-spacing: 0.04em; text-transform: uppercase; }
+/* ── Weight chart ── */
+.weight-chart-svg { width: 100%; height: 100px; display: block; margin-bottom: 6px; }
+.chart-empty { text-align: center; color: var(--text-mute); font-size: 12px; padding: 20px 0; }
 
-  /* ── Summary ── */
-  .summary-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px; margin-bottom: 12px;
-  }
-  .summary-card-title {
-    font-size: 11px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--gold); margin-bottom: 12px;
-  }
-  .summary-stat-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 6px 0; border-bottom: 1px solid var(--text-mute);
-  }
-  .summary-stat-row:last-child { border-bottom: none; }
-  .summary-stat-label { font-size: 13px; color: var(--text-dim); }
-  .summary-stat-val { font-size: 15px; font-weight: 600; color: var(--text); }
-  .summary-stat-val.gold { color: var(--gold); }
+/* ── Contribution graph ── */
+.contrib-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+.contrib-wrap { display: inline-flex; flex-direction: column; gap: 0; min-width: max-content; }
+.contrib-month-row { display: flex; margin-left: 22px; margin-bottom: 4px; height: 14px; }
+.contrib-month-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-mute);
+  white-space: nowrap; overflow: visible;
+}
+.contrib-grid-row { display: flex; align-items: flex-start; gap: 0; }
+.contrib-day-labels { display: flex; flex-direction: column; gap: 2px; margin-right: 4px; width: 18px; flex-shrink: 0; }
+.contrib-day-label { font-size: 8px; color: var(--text-mute); height: 11px; line-height: 11px; text-align: right; }
+.contrib-columns { display: flex; gap: 2px; }
+.contrib-col { display: flex; flex-direction: column; gap: 2px; }
+.contrib-cell { width: 11px; height: 11px; border-radius: 2px; cursor: pointer; transition: transform 0.1s, opacity 0.1s; position: relative; flex-shrink: 0; }
+.contrib-cell:hover { transform: scale(1.35); z-index: 2; }
+.contrib-cell.future { opacity: 0.15; cursor: default; }
+.contrib-cell.future:hover { transform: none; }
+.contrib-cell.is-today { box-shadow: 0 0 0 1.5px var(--gold); }
+.cs-0 { background: var(--surface2); }
+.cs-1 { background: rgba(76,175,80,0.15); }
+.cs-2 { background: rgba(76,175,80,0.30); }
+.cs-3 { background: rgba(76,175,80,0.50); }
+.cs-4 { background: rgba(76,175,80,0.65); }
+.cs-5 { background: rgba(76,175,80,0.78); }
+.cs-6 { background: rgba(76,175,80,0.90); }
+.cs-7 { background: var(--green); box-shadow: 0 0 5px rgba(76,175,80,0.55); }
+.contrib-tooltip {
+  position: fixed; background: rgba(0,0,0,0.97); border: 1px solid var(--border);
+  border-radius: 7px; padding: 6px 10px; font-size: 11px; color: var(--text);
+  pointer-events: none; z-index: 200; white-space: nowrap;
+  transform: translate(-50%, -110%); box-shadow: 0 4px 16px rgba(0,0,0,0.8); display: none;
+}
+.contrib-tooltip.visible { display: block; }
+.contrib-legend { display: flex; align-items: center; gap: 5px; margin-top: 12px; justify-content: flex-end; }
+.contrib-legend-label { font-size: 10px; color: var(--text-mute); }
+.contrib-legend-cell { width: 11px; height: 11px; border-radius: 2px; flex-shrink: 0; }
 
-  .streak-row {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 0; border-bottom: 1px solid var(--text-mute);
-  }
-  .streak-row:last-child { border-bottom: none; }
-  .streak-icon { font-size: 16px; width: 22px; }
-  .streak-name { font-size: 13px; color: var(--text-dim); flex: 1; }
-  .streak-val { font-size: 14px; font-weight: 600; color: var(--gold); }
+/* ── Sync dot ── */
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--border); flex-shrink: 0;
+  cursor: pointer; transition: background 0.3s;
+}
+.sync-dot.ok { background: var(--green); }
+.sync-dot.syncing { background: var(--gold); animation: blink 1s ease-in-out infinite; }
+.sync-dot.error { background: var(--red); }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
-  .progress-bar-wrap { margin-top: 8px; }
-  .progress-bar-label {
-    display: flex; justify-content: space-between;
-    font-size: 12px; color: var(--text-dim); margin-bottom: 4px;
-  }
-  .progress-bar-bg { height: 6px; background: var(--text-mute); border-radius: 3px; overflow: hidden; }
-  .progress-bar-fill { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s ease; }
+/* ── Celebration overlay ── */
+#celebration {
+  position: fixed; inset: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+}
+#celebration.show {
+  animation: celebIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards,
+             celebOut 0.4s ease 2.2s forwards;
+}
+.celebration-box {
+  background: #000; border: 2px solid var(--gold);
+  border-radius: 22px; padding: 30px 50px; text-align: center;
+  box-shadow: 0 0 80px rgba(200,169,110,0.3);
+}
+.celebration-icon { font-size: 44px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: var(--gold); }
+.celebration-text { font-size: 22px; font-weight: 900; color: var(--text); letter-spacing: 0.04em; }
+.celebration-sub { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+@keyframes celebIn  { from { opacity:0; transform: scale(0.7); } to { opacity:1; transform: scale(1); } }
+@keyframes celebOut { from { opacity:1; transform: scale(1); } to { opacity:0; transform: scale(0.9); } }
 
-  /* ── Weight chart ── */
-  .weight-chart-svg { width: 100%; height: 100px; display: block; margin-bottom: 6px; }
-  .chart-empty { text-align: center; color: var(--text-mute); font-size: 12px; padding: 20px 0; }
+/* ── Goal check flash animation ── */
+@keyframes goalFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(76,175,80,0); }
+  40%  { box-shadow: 0 0 0 8px rgba(76,175,80,0.3); }
+  100% { box-shadow: 0 0 0 12px rgba(76,175,80,0); }
+}
+.goal-card.checked { animation: goalFlash 0.4s ease-out; }
 
-  /* ── Contribution graph ── */
-  .contrib-scroll {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 4px;
-  }
-  .contrib-wrap {
-    display: inline-flex;
-    flex-direction: column;
-    gap: 0;
-    min-width: max-content;
-  }
-  .contrib-month-row {
-    display: flex;
-    margin-left: 22px; /* align with grid */
-    margin-bottom: 4px;
-    height: 14px;
-  }
-  .contrib-month-label {
-    font-size: 9px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-mute);
-    white-space: nowrap;
-    overflow: visible;
-  }
-  .contrib-grid-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-  }
-  .contrib-day-labels {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin-right: 4px;
-    width: 18px;
-    flex-shrink: 0;
-  }
-  .contrib-day-label {
-    font-size: 8px;
-    color: var(--text-mute);
-    height: 11px;
-    line-height: 11px;
-    text-align: right;
-  }
-  .contrib-columns {
-    display: flex;
-    gap: 2px;
-  }
-  .contrib-col {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .contrib-cell {
-    width: 11px;
-    height: 11px;
-    border-radius: 2px;
-    cursor: pointer;
-    transition: transform 0.1s, opacity 0.1s;
-    position: relative;
-    flex-shrink: 0;
-  }
-  .contrib-cell:hover { transform: scale(1.35); z-index: 2; }
-  .contrib-cell.future { opacity: 0.2; cursor: default; }
-  .contrib-cell.future:hover { transform: none; }
-  .contrib-cell.is-today { box-shadow: 0 0 0 1.5px var(--gold); }
+/* ── Level-up overlay ── */
+#levelup-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+}
+#levelup-overlay.show {
+  animation: celebIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards,
+             celebOut 0.4s ease 2.6s forwards;
+}
+.levelup-box {
+  background: #000; border: 2px solid var(--gold);
+  border-radius: 22px; padding: 28px 48px; text-align: center;
+  box-shadow: 0 0 120px rgba(200,169,110,0.5), 0 0 40px rgba(200,169,110,0.25);
+}
+.levelup-icon  { font-size: 40px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; color: var(--gold); }
+.levelup-sub  { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 8px; }
+.levelup-name { font-size: 28px; font-weight: 900; color: var(--gold); letter-spacing: 0.02em; }
 
-  /* Score colour scale */
-  .cs-0  { background: var(--surface2); }
-  .cs-1  { background: rgba(200,169,110,0.18); }
-  .cs-2  { background: rgba(200,169,110,0.32); }
-  .cs-3  { background: rgba(200,169,110,0.46); }
-  .cs-4  { background: rgba(200,169,110,0.58); }
-  .cs-5  { background: rgba(200,169,110,0.70); }
-  .cs-6  { background: rgba(200,169,110,0.84); }
-  .cs-7  { background: #c8a96e; box-shadow: 0 0 5px rgba(200,169,110,0.55); }
+/* ── Setup modal ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.92); backdrop-filter: blur(10px);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px; max-width: 360px; width: 100%;
+}
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.modal-body { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
+.modal-input {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text); font-size: 15px;
+  padding: 12px 14px; outline: none; font-family: inherit; margin-bottom: 4px;
+}
+.modal-input:focus { border-color: #444; }
+.modal-btn {
+  width: 100%; padding: 14px; background: var(--text); color: var(--bg);
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; touch-action: manipulation;
+}
+.modal-btn.secondary { background: none; border: 1px solid var(--border); color: var(--text-dim); }
 
-  /* Tooltip */
-  .contrib-tooltip {
-    position: fixed;
-    background: rgba(9,9,12,0.97);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 6px 10px;
-    font-size: 11px;
-    color: var(--text);
-    pointer-events: none;
-    z-index: 200;
-    white-space: nowrap;
-    transform: translate(-50%, -110%);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
-    display: none;
-  }
-  .contrib-tooltip.visible { display: block; }
+/* ── Strava ── */
+.strava-connect-btn {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  width: 100%; padding: 13px 16px; background: #FC4C02; color: #fff;
+  border: none; border-radius: 12px; font-size: 13px; font-weight: 700;
+  cursor: pointer; touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent; transition: opacity 0.15s; margin-bottom: 4px;
+}
+.strava-connect-btn:active { opacity: 0.85; }
+.strava-row {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1px solid #FC4C0233;
+  border-radius: 12px; padding: 10px 14px; margin-bottom: 4px;
+}
+.strava-wordmark { font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: #FC4C02; flex-shrink: 0; }
+.strava-info { flex: 1; min-width: 0; }
+.strava-athlete { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+.strava-meta { font-size: 11px; color: var(--text-mute); margin-top: 1px; }
+.strava-sync-btn {
+  background: none; border: 1px solid #FC4C0244;
+  color: #FC4C02; border-radius: 8px; padding: 7px 13px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0; transition: background 0.15s;
+}
+.strava-sync-btn:active { background: rgba(252,76,2,0.1); }
+.strava-sync-btn:disabled { opacity: 0.4; cursor: default; }
+.strava-goal-dot { width: 6px; height: 6px; border-radius: 50%; background: #FC4C02; display: inline-block; flex-shrink: 0; }
 
-  /* Legend */
-  .contrib-legend {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 12px;
-    justify-content: flex-end;
-  }
-  .contrib-legend-label {
-    font-size: 10px;
-    color: var(--text-mute);
-  }
-  .contrib-legend-cell {
-    width: 11px; height: 11px;
-    border-radius: 2px;
-    flex-shrink: 0;
-  }
+/* ── Gamification bar ── */
+.xp-section { padding: 0 0 16px; display: flex; flex-direction: column; gap: 8px; }
+.level-coin-row { display: flex; align-items: center; justify-content: space-between; }
+.level-badge { display: flex; align-items: center; gap: 8px; }
+.level-name-text { font-size: 18px; font-weight: 900; color: var(--gold); letter-spacing: 0.01em; }
+.level-num-chip {
+  font-size: 10px; font-weight: 700; color: var(--text-mute);
+  background: var(--surface2); border-radius: 4px;
+  padding: 3px 6px; letter-spacing: 0.06em;
+}
+.coin-badge {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 16px; font-weight: 900; color: var(--gold);
+}
+.coin-badge i { font-size: 18px; line-height: 1; }
+@keyframes coinPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.4); }
+  70%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.coin-pulse { animation: coinPulse 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.xp-bar-row { display: flex; align-items: center; gap: 10px; }
+.xp-count { font-size: 11px; color: var(--text-mute); white-space: nowrap; min-width: 52px; text-align: right; font-weight: 600; }
+.xp-bar-bg { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.xp-bar-fill { height: 100%; background: var(--gold); border-radius: 2px; transition: width 0.5s ease; }
+.xp-next { font-size: 10px; color: var(--text-mute); white-space: nowrap; min-width: 52px; font-weight: 600; }
+.form-row { display: flex; align-items: center; justify-content: space-between; }
+.form-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 11px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.form-pill i { font-size: 14px; line-height: 1; }
+.form-cold    { background: rgba(30,136,229,0.15);  color: var(--blue); }
+.form-warming { background: rgba(249,168,37,0.15);  color: #F9A825; }
+.form-in-form { background: rgba(76,175,80,0.15);   color: var(--green); }
+.form-on-fire { background: rgba(255,109,0,0.18);   color: var(--orange); }
+.form-peak    { background: rgba(200,169,110,0.18); color: var(--gold); box-shadow: 0 0 12px rgba(200,169,110,0.3); }
 
-  /* ── Sync dot ── */
-  .sync-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--text-mute); flex-shrink: 0;
-    cursor: pointer; transition: background 0.3s;
-  }
-  .sync-dot.ok { background: var(--green); }
-  .sync-dot.syncing { background: var(--gold); animation: blink 1s ease-in-out infinite; }
-  .sync-dot.error { background: var(--red); }
-  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+/* ── Boss Day banner ── */
+.boss-day-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(229,57,53,0.08);
+  border: 1px solid rgba(229,57,53,0.35);
+  border-left: 3px solid var(--red);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 10px;
+}
+.boss-emoji { font-size: 24px; flex-shrink: 0; color: var(--red); line-height: 1; }
+.boss-info { flex: 1; }
+.boss-title { font-size: 11px; font-weight: 700; color: var(--red); letter-spacing: 0.1em; text-transform: uppercase; }
+.boss-desc  { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 
-  /* ── Celebration overlay ── */
-  #celebration {
-    position: fixed; inset: 0; z-index: 50;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none; opacity: 0;
-  }
-  #celebration.show {
-    animation: celebIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards,
-               celebOut 0.4s ease 2.2s forwards;
-  }
-  .celebration-box {
-    background: rgba(9,9,12,0.96);
-    border: 1px solid var(--gold);
-    border-radius: 22px;
-    padding: 30px 50px;
-    text-align: center;
-    box-shadow: 0 0 80px rgba(200,169,110,0.2);
-  }
-  .celebration-emoji { font-size: 48px; display: block; margin-bottom: 10px; line-height: 1; }
-  .celebration-text { font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; }
-  .celebration-sub { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
-  @keyframes celebIn  { from { opacity:0; transform: scale(0.7); } to { opacity:1; transform: scale(1); } }
-  @keyframes celebOut { from { opacity:1; transform: scale(1); } to { opacity:0; transform: scale(0.9); } }
+/* ── Share Week button ── */
+.share-week-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px; margin-top: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text-dim);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, color 0.15s;
+}
+.share-week-btn:active { color: var(--gold); border-color: var(--gold-dim); }
 
-  /* ── Setup modal ── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 100;
-    background: rgba(9,9,12,0.88);
-    backdrop-filter: blur(10px);
-    display: flex; align-items: center; justify-content: center;
-    padding: 24px;
-  }
-  .modal {
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 16px; padding: 24px;
-    max-width: 360px; width: 100%;
-  }
-  .modal-title { font-size: 16px; font-weight: 700; color: var(--gold); margin-bottom: 8px; }
-  .modal-body { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; line-height: 1.6; }
-  .modal-input {
-    width: 100%; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; color: var(--text); font-size: 15px;
-    padding: 12px 14px; outline: none; font-family: inherit; margin-bottom: 4px;
-  }
-  .modal-input:focus { border-color: var(--gold-dim); }
-  .modal-btn {
-    width: 100%; padding: 14px;
-    background: var(--gold); color: var(--bg);
-    border: none; border-radius: 10px;
-    font-size: 15px; font-weight: 600;
-    cursor: pointer; margin-top: 8px;
-    touch-action: manipulation;
-  }
-  .modal-btn.secondary { background: none; border: 1px solid var(--border); color: var(--text-dim); }
+/* ── Unlock badges & theme toggle ── */
+.unlock-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--gold-faint); border: 1px solid rgba(200,169,110,0.3);
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em;
+}
+.unlock-locked {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 10px;
+  font-size: 11px; font-weight: 600; color: var(--text-mute); letter-spacing: 0.06em;
+}
+.theme-toggle-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 16px; width: 100%;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--text-dim);
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent; margin-top: 8px;
+  transition: border-color 0.15s, color 0.15s;
+}
+.theme-toggle-btn:active { color: var(--gold); border-color: var(--gold-dim); }
 
-  /* ── Strava ── */
-  .strava-connect-btn {
-    display: flex; align-items: center; justify-content: center; gap: 9px;
-    width: 100%; padding: 13px 16px;
-    background: #FC4C02; color: #fff;
-    border: none; border-radius: 12px;
-    font-size: 13px; font-weight: 600;
-    cursor: pointer; touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: opacity 0.15s;
-    margin-bottom: 4px;
-  }
-  .strava-connect-btn:active { opacity: 0.85; }
-  .strava-row {
-    display: flex; align-items: center; gap: 12px;
-    background: var(--surface); border: 1px solid rgba(252,76,2,0.2);
-    border-radius: 12px; padding: 10px 14px; margin-bottom: 4px;
-  }
-  .strava-wordmark {
-    font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
-    text-transform: uppercase; color: #FC4C02; flex-shrink: 0;
-  }
-  .strava-info { flex: 1; min-width: 0; }
-  .strava-athlete { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.2; }
-  .strava-meta { font-size: 11px; color: var(--text-mute); margin-top: 1px; }
-  .strava-sync-btn {
-    background: none; border: 1px solid rgba(252,76,2,0.35);
-    color: #FC4C02; border-radius: 8px; padding: 7px 13px;
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    flex-shrink: 0; transition: background 0.15s;
-  }
-  .strava-sync-btn:active { background: rgba(252,76,2,0.1); }
-  .strava-sync-btn:disabled { opacity: 0.4; cursor: default; }
-  .strava-goal-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #FC4C02; display: inline-block; flex-shrink: 0;
-  }
+/* ── Boss record ── */
+.boss-record { display: flex; gap: 32px; padding: 6px 0; }
+.boss-record-stat { text-align: center; }
+.boss-record-val  { font-size: 36px; font-weight: 900; line-height: 1; }
+.boss-record-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-top: 4px; }
 
-  /* ── Gamification bar ── */
-  .xp-section {
-    padding: 0 0 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-  .level-coin-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .level-badge { display: flex; align-items: center; gap: 6px; }
-  .level-name-text {
-    font-size: 11px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--gold);
-  }
-  .level-num-chip {
-    font-size: 9px; font-weight: 600;
-    color: var(--text-mute); background: var(--surface2);
-    border-radius: 4px; padding: 2px 5px; letter-spacing: 0.04em;
-  }
-  .coin-badge {
-    display: flex; align-items: center; gap: 4px;
-    font-size: 12px; font-weight: 700; color: var(--gold);
-    background: var(--gold-faint); border-radius: 8px; padding: 3px 8px;
-  }
-  .xp-bar-row { display: flex; align-items: center; gap: 8px; }
-  .xp-count {
-    font-size: 10px; color: var(--text-mute);
-    white-space: nowrap; min-width: 44px; text-align: right;
-  }
-  .xp-bar-bg {
-    flex: 1; height: 4px;
-    background: var(--text-mute); border-radius: 2px; overflow: hidden;
-  }
-  .xp-bar-fill {
-    height: 100%; background: var(--gold);
-    border-radius: 2px; transition: width 0.5s ease;
-  }
-  .xp-next { font-size: 10px; color: var(--text-mute); white-space: nowrap; min-width: 44px; }
-  .form-row { display: flex; align-items: center; justify-content: space-between; }
-  .form-pill {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 8px; border-radius: 6px;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.06em; text-transform: uppercase;
-  }
-  .form-cold    { background: rgba(70,120,200,0.12); color: #7090d0; }
-  .form-warming { background: rgba(70,160,220,0.12); color: #50b0dc; }
-  .form-in-form { background: rgba(92,184,122,0.12); color: #5cb87a; }
-  .form-on-fire { background: rgba(220,140,50,0.15); color: #dc8c32; }
-  .form-peak    { background: rgba(200,169,110,0.18); color: var(--gold); box-shadow: 0 0 8px rgba(200,169,110,0.25); }
+/* ── Milestone ── */
+.milestone-line { font-size: 10px; color: var(--text-mute); letter-spacing: 0.04em; margin-top: 2px; }
+.milestone-line .ms-hit { color: var(--gold); font-weight: 700; }
+.banner-40-line {
+  font-size: 9px; font-weight: 900; letter-spacing: 0.22em;
+  color: var(--gold); text-shadow: 0 0 8px rgba(200,169,110,0.7);
+  margin-top: 2px; transition: opacity 0.5s; opacity: 0;
+}
+.banner-40-line.visible { opacity: 1; }
 
-  /* ── Boss Day banner ── */
-  .boss-day-banner {
-    display: flex; align-items: center; gap: 10px;
-    background: rgba(200,169,110,0.06);
-    border: 1px solid rgba(200,169,110,0.25);
-    border-radius: 10px; padding: 10px 14px; margin-bottom: 8px;
-  }
-  .boss-emoji { font-size: 22px; flex-shrink: 0; }
-  .boss-info { flex: 1; }
-  .boss-title { font-size: 12px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em; text-transform: uppercase; }
-  .boss-desc  { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
+/* ── Check-in cards ── */
+.checkin-card { border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; }
+.checkin-morning { background: #0a0a00; border: 1px solid rgba(200,169,110,0.25); border-left: 3px solid var(--gold); }
+.checkin-evening { background: #00000a; border: 1px solid rgba(30,136,229,0.25); border-left: 3px solid var(--blue); }
+.checkin-done { background: rgba(76,175,80,0.06); border: 1px solid rgba(76,175,80,0.18); }
+.checkin-missed { background: var(--surface); border: 1px solid var(--border); }
+.checkin-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.checkin-icon { font-size: 22px; flex-shrink: 0; line-height: 1; }
+.checkin-title { font-size: 16px; font-weight: 900; color: var(--text); letter-spacing: 0.04em; text-transform: uppercase; }
+.checkin-title-eve { color: #6aacff; }
+.checkin-subtitle { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+.checkin-field { margin-bottom: 12px; }
+.checkin-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-mute); margin-bottom: 6px; }
+.checkin-input {
+  width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 15px;
+  padding: 10px 12px; outline: none; font-family: inherit; -webkit-appearance: none;
+  transition: border-color 0.15s;
+}
+.checkin-input:focus { border-color: #444; }
+textarea.checkin-input { resize: none; height: 60px; }
+.checkin-btn {
+  width: 100%; padding: 12px; background: var(--gold); color: #000;
+  border: none; border-radius: 10px; font-size: 14px; font-weight: 900;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer; touch-action: manipulation; transition: opacity 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.checkin-btn:active { opacity: 0.82; }
+.checkin-btn-eve { background: var(--blue); color: #fff; }
 
-  /* ── Level-up overlay ── */
-  #levelup-overlay {
-    position: fixed; inset: 0; z-index: 60;
-    display: flex; align-items: center; justify-content: center;
-    pointer-events: none; opacity: 0;
-  }
-  #levelup-overlay.show {
-    animation: celebIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards,
-               celebOut 0.4s ease 2.6s forwards;
-  }
-  .levelup-box {
-    background: rgba(9,9,12,0.97);
-    border: 2px solid var(--gold);
-    border-radius: 22px; padding: 28px 48px; text-align: center;
-    box-shadow: 0 0 120px rgba(200,169,110,0.4), 0 0 40px rgba(200,169,110,0.2);
-  }
-  .levelup-emoji { font-size: 42px; display: block; margin-bottom: 10px; line-height: 1; }
-  .levelup-sub  { font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
-  .levelup-name { font-size: 26px; font-weight: 800; color: var(--gold); letter-spacing: 0.03em; }
+/* Stars */
+.star-row { display: flex; gap: 8px; padding: 2px 0 12px; }
+.star-btn {
+  font-size: 32px; cursor: pointer; line-height: 1; user-select: none;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: transform 0.12s; color: var(--border);
+}
+.star-btn i { font-size: 32px; line-height: 1; display: block; transition: color 0.12s, transform 0.12s; }
+.star-btn.lit i { color: var(--gold); }
+.star-btn:active i { transform: scale(0.85); }
+@keyframes starPop { 0% { transform: scale(1); } 50% { transform: scale(1.35); } 100% { transform: scale(1.1); } }
+.star-btn.lit i { animation: starPop 0.25s cubic-bezier(0.34,1.56,0.64,1); }
 
-  /* ── Share Week button ── */
-  .share-week-btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    width: 100%; padding: 13px; margin-top: 16px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 12px; color: var(--text-dim);
-    font-size: 13px; font-weight: 600; cursor: pointer;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    transition: border-color 0.15s, color 0.15s;
-  }
-  .share-week-btn:active { color: var(--gold); border-color: var(--gold-dim); }
+/* Non-neg chips */
+.nonneg-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.nonneg-chip {
+  padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 700;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-mute); cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  display: flex; align-items: center; gap: 6px;
+}
+.nonneg-chip i { font-size: 14px; line-height: 1; }
+.nonneg-chip.selected { background: var(--gold-faint); border-color: var(--gold-dim); color: var(--gold); }
 
-  /* ── Unlock badges & theme toggle ── */
-  .unlock-badge {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(200,169,110,0.08); border: 1px solid rgba(200,169,110,0.3);
-    border-radius: 8px; padding: 5px 10px;
-    font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em;
-  }
-  .unlock-locked {
-    display: inline-flex; align-items: center; gap: 6px;
-    background: var(--surface); border: 1px solid var(--text-mute);
-    border-radius: 8px; padding: 5px 10px;
-    font-size: 11px; font-weight: 600; color: var(--text-mute); letter-spacing: 0.06em;
-  }
-  .theme-toggle-btn {
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 11px 16px; width: 100%;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 10px; color: var(--text-dim);
-    font-size: 12px; font-weight: 600; cursor: pointer;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent; margin-top: 8px;
-  }
-  .theme-toggle-btn:active { color: var(--gold); border-color: var(--gold-dim); }
+/* Yes/No */
+.yesno-row { display: flex; gap: 8px; }
+.yesno-btn {
+  flex: 1; padding: 9px; border-radius: 8px;
+  font-size: 13px; font-weight: 700;
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-mute); cursor: pointer;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.yesno-btn i { font-size: 14px; line-height: 1; }
+.yesno-btn.sel-yes { background: var(--green-faint); border-color: rgba(76,175,80,0.3); color: var(--green); }
+.yesno-btn.sel-no  { background: var(--gold-faint); border-color: var(--border); color: var(--text-mute); }
 
-  /* ── Boss record stats ── */
-  .boss-record { display: flex; gap: 24px; padding: 4px 0; }
-  .boss-record-stat { text-align: center; }
-  .boss-record-val  { font-size: 28px; font-weight: 800; line-height: 1; }
-  .boss-record-label {
-    font-size: 10px; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-mute); margin-top: 2px;
-  }
-
-  /* ── Milestone line ── */
-  .milestone-line { font-size: 10px; color: var(--text-mute); letter-spacing: 0.03em; margin-top: 2px; }
-  .milestone-line .ms-hit { color: var(--gold); font-weight: 700; }
-  .banner-40-line {
-    font-size: 9px; font-weight: 900; letter-spacing: 0.22em;
-    color: var(--gold); text-shadow: 0 0 8px rgba(200,169,110,0.7);
-    margin-top: 2px; transition: opacity 0.5s; opacity: 0;
-  }
-  .banner-40-line.visible { opacity: 1; }
-
-  /* ── Bonus goals ── */
-  .bonus-section-label {
-    display: flex; align-items: center; gap: 8px;
-  }
-  .bonus-label-xp {
-    font-size: 9px; font-weight: 700; color: var(--gold);
-    background: var(--gold-faint); border-radius: 4px;
-    padding: 2px 6px; letter-spacing: 0.04em; text-transform: none;
-  }
-  .goal-card.bonus-goal { opacity: 0.88; }
-  .goal-card.bonus-goal .goal-check { border-color: rgba(200,169,110,0.3); }
-  .goal-card.bonus-checked {
-    background: var(--gold-faint);
-    border-color: rgba(200,169,110,0.25);
-  }
-  .goal-card.bonus-checked .goal-check {
-    background: var(--gold); border-color: var(--gold);
-  }
-  .bonus-xp-chip {
-    font-size: 10px; font-weight: 700; color: var(--gold);
-    background: rgba(200,169,110,0.12);
-    border-radius: 5px; padding: 2px 6px;
-    flex-shrink: 0; margin-left: auto;
-  }
-
-  /* ── Ember theme (unlocked at 25 coins) ── */
-  .theme-ember {
-    --bg: #0d0908; --surface: rgba(240,100,40,0.04); --surface2: rgba(240,100,40,0.07);
-    --border: rgba(220,110,50,0.15); --gold: #e07840;
-    --gold-dim: rgba(220,110,50,0.4); --gold-faint: rgba(220,110,50,0.08);
-    --text: #f2e8de; --text-dim: #8a6050; --text-mute: #3d2018;
-  }
-
-  /* ── Check-in cards ── */
-  .checkin-card {
-    border-radius: 14px; padding: 14px 16px; margin-bottom: 12px;
-  }
-  .checkin-morning {
-    background: rgba(200,169,110,0.07);
-    border: 1px solid rgba(200,169,110,0.22);
-  }
-  .checkin-evening {
-    background: rgba(100,130,200,0.07);
-    border: 1px solid rgba(100,130,200,0.2);
-  }
-  .checkin-done {
-    background: rgba(92,184,122,0.06);
-    border: 1px solid rgba(92,184,122,0.15);
-  }
-  .checkin-missed {
-    background: var(--surface); border: 1px solid var(--text-mute);
-  }
-  .checkin-header {
-    display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px;
-  }
-  .checkin-icon { font-size: 20px; flex-shrink: 0; line-height: 1.2; }
-  .checkin-title { font-size: 14px; font-weight: 700; color: var(--text); }
-  .checkin-title-eve { color: #8aafe8; }
-  .checkin-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 1px; }
-  .checkin-field { margin-bottom: 12px; }
-  .checkin-label {
-    font-size: 10px; font-weight: 600; letter-spacing: 0.07em;
-    text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px;
-  }
-  .checkin-input {
-    width: 100%; background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border); border-radius: 8px;
-    color: var(--text); font-size: 15px; padding: 10px 12px;
-    outline: none; font-family: inherit; -webkit-appearance: none;
-    transition: border-color 0.15s;
-  }
-  .checkin-input:focus { border-color: var(--gold-dim); }
-  textarea.checkin-input { resize: none; height: 60px; }
-  .checkin-btn {
-    width: 100%; padding: 12px;
-    background: var(--gold); color: var(--bg);
-    border: none; border-radius: 10px;
-    font-size: 14px; font-weight: 700; cursor: pointer;
-    touch-action: manipulation; transition: opacity 0.15s;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .checkin-btn:active { opacity: 0.82; }
-  .checkin-btn-eve { background: #5a7fd0; }
-
-  /* Stars */
-  .star-row { display: flex; gap: 6px; padding: 2px 0 10px; }
-  .star-btn {
-    font-size: 26px; cursor: pointer; line-height: 1; user-select: none;
-    -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    transition: transform 0.1s; filter: grayscale(1) opacity(0.35);
-  }
-  .star-btn.lit { filter: none; }
-  .star-btn:active { transform: scale(0.88); }
-
-  /* Non-neg chips */
-  .nonneg-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .nonneg-chip {
-    padding: 7px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text-dim); cursor: pointer;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    transition: background 0.12s, border-color 0.12s, color 0.12s;
-  }
-  .nonneg-chip.selected {
-    background: var(--gold-faint); border-color: var(--gold-dim); color: var(--gold);
-  }
-
-  /* Yes/No */
-  .yesno-row { display: flex; gap: 8px; }
-  .yesno-btn {
-    flex: 1; padding: 9px; border-radius: 8px;
-    font-size: 13px; font-weight: 600;
-    background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text-dim); cursor: pointer;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent;
-    transition: background 0.12s, border-color 0.12s, color 0.12s;
-  }
-  .yesno-btn.sel-yes {
-    background: var(--green-faint); border-color: rgba(92,184,122,0.3); color: var(--green);
-  }
-  .yesno-btn.sel-no {
-    background: var(--gold-faint); border-color: rgba(200,169,110,0.2); color: var(--text-mute);
-  }
+/* ── Ember theme ── */
+.theme-ember {
+  --bg: #0d0908; --surface: rgba(240,100,40,0.05); --surface2: rgba(240,100,40,0.08);
+  --border: rgba(220,110,50,0.2); --gold: #e07840;
+  --gold-dim: rgba(220,110,50,0.4); --gold-faint: rgba(220,110,50,0.09);
+  --text: #FFFFFF; --text-dim: #8a6050; --text-mute: #3d2018;
+}
 </style>
 </head>
 <body>
@@ -849,17 +679,17 @@
 <!-- Celebration overlay -->
 <div id="celebration">
   <div class="celebration-box">
-    <span class="celebration-emoji">🎉</span>
+    <div class="celebration-icon"><i class="ph-bold ph-trophy"></i></div>
     <div class="celebration-text">Perfect Day!</div>
-    <div class="celebration-sub" id="celebration-sub">All 3 core goals hit! 🎯</div>
+    <div class="celebration-sub" id="celebration-sub">All 3 core goals hit!</div>
   </div>
 </div>
 
 <!-- Level-up overlay -->
 <div id="levelup-overlay">
   <div class="levelup-box">
-    <span class="levelup-emoji">⚡</span>
-    <div class="levelup-sub">Level Up!</div>
+    <div class="levelup-icon"><i class="ph-bold ph-lightning"></i></div>
+    <div class="levelup-sub">Level Up</div>
     <div class="levelup-name" id="levelup-name">Machine</div>
   </div>
 </div>
@@ -901,10 +731,10 @@
   <div id="checkin-section"></div>
   <div class="score-wrap">
     <div class="ring-container">
-      <svg viewBox="0 0 96 96" width="96" height="96">
-        <circle class="ring-bg" cx="48" cy="48" r="42"/>
-        <circle class="ring-fill" id="ring-fill" cx="48" cy="48" r="42"
-          stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+      <svg viewBox="0 0 110 110" width="110" height="110">
+        <circle class="ring-bg" cx="55" cy="55" r="48"/>
+        <circle class="ring-fill" id="ring-fill" cx="55" cy="55" r="48"
+          stroke-dasharray="301.6" stroke-dashoffset="301.6"/>
       </svg>
       <div class="ring-text">
         <div class="ring-score" id="ring-score">0</div>
@@ -996,38 +826,35 @@
 <!-- Bottom nav -->
 <nav class="nav">
   <button class="nav-btn active" id="nav-today" onclick="switchTab('today')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-    </svg>
+    <i class="ph-bold ph-calendar-check"></i>
     Today
   </button>
   <button class="nav-btn" id="nav-week" onclick="switchTab('week')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
-    </svg>
+    <i class="ph-bold ph-grid-four"></i>
     Week
   </button>
   <button class="nav-btn" id="nav-summary" onclick="switchTab('summary')">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-    </svg>
+    <i class="ph-bold ph-chart-bar"></i>
     Summary
   </button>
 </nav>
 
 <script>
 const STORAGE_KEY = "project40hardly_v1";
+
+function ph(name, size) {
+  return `<i class="ph-bold ph-${name}"${size ? ` style="font-size:${size}px;line-height:1"` : ""}></i>`;
+}
+
 const GOALS = [
-  // Core — drive the ring, streaks, coins, Boss Days
-  { id: "coach",     label: "Coach Workout",    sub: "prescribed training",               icon: "🏋️", group: "core"  },
-  { id: "nutrition", label: "Nutrition + Protein 170g+", sub: "on plan and hit protein target", icon: "🥗", group: "core"  },
-  { id: "reading",   label: "Read",             sub: "fiction or non-fiction, 10+ pages", icon: "📖", group: "core"  },
-  // Bonus — celebrated, never penalised
-  { id: "walk",      label: "Morning Walk",     sub: "outside time",                      icon: "🚶", group: "bonus" },
-  { id: "yoga",      label: "Yoga / Stretching",sub: "morning or night",                  icon: "🧘", group: "bonus" },
-  { id: "pushups",   label: "Pee Pushups",      sub: "every time",                        icon: "💪", group: "bonus" },
-  { id: "core_work", label: "Core Work",        sub: "planks, abs, etc.",                 icon: "🦾", group: "bonus" },
-  { id: "journal",   label: "Morning Journal",  sub: "intentions + reflections written",  icon: "📓", group: "bonus" },
+  { id: "coach",     label: "Coach Workout",             sub: "prescribed training",               icon: "barbell",      group: "core"  },
+  { id: "nutrition", label: "Nutrition + Protein 170g+", sub: "on plan and hit protein target",    icon: "fork-knife",   group: "core"  },
+  { id: "reading",   label: "Read",                      sub: "fiction or non-fiction, 10+ pages", icon: "book-open",    group: "core"  },
+  { id: "walk",      label: "Morning Walk",               sub: "outside time",                      icon: "footprints",   group: "bonus" },
+  { id: "yoga",      label: "Yoga / Stretching",          sub: "morning or night",                  icon: "flower",       group: "bonus" },
+  { id: "pushups",   label: "Pee Pushups",                sub: "every time",                        icon: "lightning",    group: "bonus" },
+  { id: "core_work", label: "Core Work",                  sub: "planks, abs, etc.",                 icon: "sparkle",      group: "bonus" },
+  { id: "journal",   label: "Morning Journal",            sub: "intentions + reflections written",  icon: "note-pencil",  group: "bonus" },
 ];
 const CORE_GOALS  = GOALS.filter(g => g.group === "core");
 const BONUS_GOALS = GOALS.filter(g => g.group === "bonus");
@@ -1086,23 +913,26 @@ function currentStreak(goalId) {
 // ── Sleep & Protein ──
 const PROTEIN_TARGET = 170;
 
+function colorDot(color) {
+  return `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${color};flex-shrink:0;margin-left:4px"></span>`;
+}
+
 function sleepDot(hours, dateKey) {
   if (hours == null || isNaN(hours)) return "";
-  if (hours < 6.5) return "🔴";
-  // 🟢 requires 7.5+ AND within 0.5h of the previous night (consistency proxy)
+  if (hours < 6.5) return colorDot('var(--red)');
   const [y, m, d] = dateKey.split("-").map(Number);
   const prevHours = data[toKey(new Date(y, m - 1, d - 1))]?.sleep ?? null;
   const consistent = prevHours === null || Math.abs(hours - prevHours) <= 0.5;
-  if (hours >= 7.5 && consistent) return "🟢";
-  return "🟡";
+  if (hours >= 7.5 && consistent) return colorDot('var(--green)');
+  return colorDot('#F9A825');
 }
 
 function proteinDot(grams) {
   if (grams == null || isNaN(grams)) return "";
-  if (grams >= PROTEIN_TARGET) return "🟢";
-  if (grams >= 150) return "🟠";
-  if (grams >= 100) return "🟡";
-  return "🔴";
+  if (grams >= PROTEIN_TARGET) return colorDot('var(--green)');
+  if (grams >= 150) return colorDot('var(--orange)');
+  if (grams >= 100) return colorDot('#F9A825');
+  return colorDot('var(--red)');
 }
 
 function proteinBarColor(grams) {
@@ -1270,14 +1100,13 @@ function getFormRating() {
     const k = toKey(d);
     if (data[k]) scores.push(getScore(k));
   }
-  if (!scores.length) return { label: "Cold",       cls: "form-cold",    emoji: "🥶" };
-  // Form based on core completion rate (0–1 scale)
+  if (!scores.length) return { label: "Cold",       cls: "form-cold",    icon: "snowflake" };
   const pct = (scores.reduce((s, x) => s + x, 0) / scores.length) / CORE_COUNT;
-  if (pct >= 1)    return { label: "Peak",       cls: "form-peak",    emoji: "🔱" };
-  if (pct >= 0.75) return { label: "On Fire",    cls: "form-on-fire", emoji: "🔥" };
-  if (pct >= 0.5)  return { label: "In Form",    cls: "form-in-form", emoji: "✅" };
-  if (pct >= 0.25) return { label: "Warming Up", cls: "form-warming", emoji: "🌡️" };
-  return { label: "Cold", cls: "form-cold", emoji: "🥶" };
+  if (pct >= 1)    return { label: "Peak",       cls: "form-peak",    icon: "crown" };
+  if (pct >= 0.75) return { label: "On Fire",    cls: "form-on-fire", icon: "fire" };
+  if (pct >= 0.5)  return { label: "In Form",    cls: "form-in-form", icon: "check-circle" };
+  if (pct >= 0.25) return { label: "Warming Up", cls: "form-warming", icon: "thermometer" };
+  return { label: "Cold", cls: "form-cold", icon: "snowflake" };
 }
 
 // ── Milestones ──
@@ -1312,17 +1141,16 @@ function renderGamificationBar() {
   const isSun = currentDate.getDay() === 0;
   const isTod = isToday(currentDate);
 
-  // Boss day banner (shown today + on any Sunday we're viewing)
   let bossBanner = "";
   if (isSun) {
     const score = getScore(key);
     const won   = isTod ? score === CORE_COUNT : (data[key] && score === CORE_COUNT);
     const lost  = isBossDay(key) && data[key] && score > 0 && score < CORE_COUNT && !isTod;
-    const desc  = won  ? `<span style="color:var(--green)">⚔️ Boss defeated — double XP earned!</span>`
+    const desc  = won  ? `<span style="color:var(--green)">Boss defeated — double XP earned</span>`
                 : lost ? `<span style="color:var(--red)">Defeated — lost 1 Hardly Coin</span>`
-                       : `Need 3/3 core goals to defeat — win = 2× XP, lose = −1 coin`;
+                       : `Hit 3/3 core goals to win. Win = 2× XP, lose = −1 coin`;
     bossBanner = `<div class="boss-day-banner">
-      <div class="boss-emoji">${won ? "🏆" : "👹"}</div>
+      <div class="boss-emoji">${won ? ph('trophy', 22) : ph('skull', 22)}</div>
       <div class="boss-info">
         <div class="boss-title">Boss Day</div>
         <div class="boss-desc">${desc}</div>
@@ -1338,7 +1166,7 @@ function renderGamificationBar() {
           <span class="level-name-text">${lvl.name}</span>
           <span class="level-num-chip">LV ${lvl.idx}</span>
         </div>
-        <div class="coin-badge">🪙 ${coins}</div>
+        <div class="coin-badge" id="coin-badge-el">${ph('coin', 18)} ${coins}</div>
       </div>
       <div class="xp-bar-row">
         <span class="xp-count">${xp.toLocaleString()} XP</span>
@@ -1346,8 +1174,8 @@ function renderGamificationBar() {
         <span class="xp-next">${lvl.isMax ? "MAX" : lvl.nextName}</span>
       </div>
       <div class="form-row">
-        <span class="form-pill ${form.cls}">${form.emoji} ${form.label}</span>
-        <span style="font-size:10px;color:var(--text-mute)">Last 7 days</span>
+        <span class="form-pill ${form.cls}">${ph(form.icon, 12)} ${form.label}</span>
+        <span style="font-size:10px;color:var(--text-mute);font-weight:600;letter-spacing:0.06em;text-transform:uppercase">Last 7 days</span>
       </div>
     </div>`;
 }
@@ -1386,7 +1214,7 @@ function buildShareMessage() {
     `🔥 Best core streak: ${bestStreak} day${bestStreak !== 1 ? "s" : ""}`,
     `⚡ Lv ${lvl.idx} ${lvl.name} · ${xp.toLocaleString()} XP`,
     `🪙 ${coins} Hardly Coin${coins !== 1 ? "s" : ""}`,
-    `${form.emoji} Form: ${form.label}`,
+    `${({crown:"🔱",fire:"🔥","check-circle":"✅",thermometer:"🌡️",snowflake:"🥶"}[form.icon]||"") } Form: ${form.label}`,
     `🎯 ${daysToGo} days to 40`,
     ``,
     `"${talk}"`,
@@ -1537,10 +1365,10 @@ function showCelebration() {
 function makeGoalCard(goal, key, isBonus) {
   const checked = !!data[key]?.[goal.id];
   const streak  = currentStreak(goal.id);
-  const fire    = streak >= 7
-    ? `<span style="font-size:16px;line-height:1;filter:drop-shadow(0 0 4px #fc4)" title="${streak}-day streak">🔥</span>`
+  const fireHtml = streak >= 7
+    ? `<span style="color:var(--orange);font-size:13px;line-height:1" title="${streak}-day streak">${ph('fire', 14)}${ph('fire', 14)}</span>`
     : streak >= 3
-    ? `<span style="font-size:13px;line-height:1" title="${streak}-day streak">🔥</span>`
+    ? `<span style="color:var(--orange);font-size:13px;line-height:1" title="${streak}-day streak">${ph('fire', 14)}</span>`
     : "";
   const stravaPin = (data[key]?.strava_checked || []).includes(goal.id)
     ? `<span class="strava-goal-dot" title="Auto-checked by Strava"></span>`
@@ -1550,27 +1378,27 @@ function makeGoalCard(goal, key, isBonus) {
   if (isBonus) {
     card.className = "goal-card bonus-goal" + (checked ? " bonus-checked" : "");
     card.innerHTML = `
-      <div class="goal-icon">${goal.icon}</div>
+      <div class="goal-icon">${ph(goal.icon, 18)}</div>
       <div class="goal-text">
-        <div class="goal-label">${goal.label}${fire}${stravaPin}</div>
+        <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
         <div class="goal-sub">${goal.sub}</div>
       </div>
-      ${checked ? '<span class="bonus-xp-chip">⭐ +5</span>' : ""}
+      ${checked ? '<span class="bonus-xp-chip">+5 XP</span>' : ""}
       <div class="goal-check">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="2,7 6,11 12,3"/>
         </svg>
       </div>`;
   } else {
     card.className = "goal-card" + (checked ? " checked" : "");
     card.innerHTML = `
-      <div class="goal-icon">${goal.icon}</div>
+      <div class="goal-icon">${ph(goal.icon, 20)}</div>
       <div class="goal-text">
-        <div class="goal-label">${goal.label}${fire}${stravaPin}</div>
+        <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
         <div class="goal-sub">${goal.sub}</div>
       </div>
       <div class="goal-check">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="2,7 6,11 12,3"/>
         </svg>
       </div>`;
@@ -1603,8 +1431,12 @@ function toggleGoal(key, goalId) {
     const coins = computeCoins();
     const isBoss = isBossDay(key);
     const sub = document.getElementById("celebration-sub");
-    if (sub) sub.textContent = isBoss ? "Boss defeated! 2× XP earned. 🏆" : `+1 Hardly Coin (${coins} total) 🪙`;
+    if (sub) sub.textContent = isBoss ? "Boss defeated! 2× XP earned." : `+1 Hardly Coin (${coins} total)`;
     showCelebration();
+    setTimeout(() => {
+      const cb = document.getElementById('coin-badge-el');
+      if (cb) { cb.classList.remove('coin-pulse'); void cb.offsetWidth; cb.classList.add('coin-pulse'); }
+    }, 50);
   }
 
   // Level-up check
@@ -1625,8 +1457,11 @@ function saveField(field, val) {
 // ── Ring ──
 function updateRing() {
   const score = getScore(toKey(currentDate));
-  const circ  = 263.9;
-  document.getElementById("ring-fill").style.strokeDashoffset = circ - circ * (score / CORE_COUNT);
+  const circ  = 301.6;
+  const fill  = document.getElementById("ring-fill");
+  fill.style.strokeDashoffset = circ - circ * (score / CORE_COUNT);
+  fill.classList.toggle("ring-active",  score > 0 && score < CORE_COUNT);
+  fill.classList.toggle("ring-perfect", score === CORE_COUNT);
   document.getElementById("ring-score").textContent = score;
 }
 
@@ -1675,23 +1510,23 @@ function renderWeek() {
   html += "</tr></thead><tbody>";
   // Core rows, then a divider, then bonus rows
   CORE_GOALS.forEach(goal => {
-    html += `<tr><td class='goal-name-td'>${goal.icon} ${goal.label}</td>`;
+    html += `<tr><td class='goal-name-td'>${ph(goal.icon,10)} ${goal.label}</td>`;
     days.forEach(d => {
       const key  = toKey(d);
       const done = !!data[key]?.[goal.id];
       const cls  = "heat-cell " + (done ? "heat-on" : "heat-off") + (isToday(d) ? " heat-today" : "");
-      html += `<td><div class="${cls}" onclick="jumpToDay('${key}')">${done ? "✓" : ""}</div></td>`;
+      html += `<td><div class="${cls}" onclick="jumpToDay('${key}')">${done ? ph('check', 11) : ""}</div></td>`;
     });
     html += "</tr>";
   });
-  html += `<tr><td colspan="8" style="padding:4px 0"><div style="height:1px;background:var(--text-mute);margin:2px 0"></div></td></tr>`;
+  html += `<tr><td colspan="8" style="padding:4px 0"><div style="height:1px;background:var(--border);margin:2px 0"></div></td></tr>`;
   BONUS_GOALS.forEach(goal => {
-    html += `<tr><td class='goal-name-td' style="color:var(--gold);opacity:0.7">${goal.icon} ${goal.label}</td>`;
+    html += `<tr><td class='goal-name-td' style="color:var(--gold);opacity:0.7">${ph(goal.icon,10)} ${goal.label}</td>`;
     days.forEach(d => {
       const key  = toKey(d);
       const done = !!data[key]?.[goal.id];
       const cls  = "heat-cell " + (done ? "heat-on" : "heat-off") + (isToday(d) ? " heat-today" : "");
-      html += `<td><div class="${cls}" style="${done ? "background:var(--gold)" : ""}" onclick="jumpToDay('${key}')">${done ? "⭐" : ""}</div></td>`;
+      html += `<td><div class="${cls}" style="${done ? "background:var(--gold)" : ""}" onclick="jumpToDay('${key}')">${done ? ph('star', 11) : ""}</div></td>`;
     });
     html += "</tr>";
   });
@@ -1726,8 +1561,8 @@ function renderWeek() {
   }).join("");
   document.getElementById("week-metrics").innerHTML = `
     <table class="week-metrics-table">
-      <tr><td>💤 Sleep</td>${sleepRow}</tr>
-      <tr><td>🥩 Protein</td>${proteinRow}</tr>
+      <tr><td>${ph('moon',10)} Sleep</td>${sleepRow}</tr>
+      <tr><td>${ph('fork-knife',10)} Protein</td>${proteinRow}</tr>
     </table>`;
 }
 
@@ -2008,12 +1843,12 @@ function renderSummary() {
   const badge50  = coins >= 50;
   const unlocksHtml = `
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
-      <span class="${badge10 ? "unlock-badge" : "unlock-locked"}">🏅 Contender Badge ${badge10 ? "" : "· 10 coins"}</span>
-      <span class="${badge25 ? "unlock-badge" : "unlock-locked"}">🔥 Ember Theme ${badge25 ? "" : "· 25 coins"}</span>
-      <span class="${badge50 ? "unlock-badge" : "unlock-locked"}">✦ The 40 Banner ${badge50 ? "" : "· 50 coins"}</span>
+      <span class="${badge10 ? "unlock-badge" : "unlock-locked"}">${ph('medal',12)} Contender ${badge10 ? "" : "· 10 coins"}</span>
+      <span class="${badge25 ? "unlock-badge" : "unlock-locked"}">${ph('fire',12)} Ember Theme ${badge25 ? "" : "· 25 coins"}</span>
+      <span class="${badge50 ? "unlock-badge" : "unlock-locked"}">${ph('star',12)} The 40 Banner ${badge50 ? "" : "· 50 coins"}</span>
     </div>
     ${badge25 ? `<button class="theme-toggle-btn" onclick="toggleTheme()">
-      ${theme === "ember" ? "🌑 Switch to Default Theme" : "🔥 Switch to Ember Theme"}
+      ${theme === "ember" ? "Switch to Default Theme" : "Switch to Ember Theme"}
     </button>` : ""}`;
 
   // Upcoming milestone
@@ -2070,11 +1905,11 @@ function renderSummary() {
       </div>
       <div class="summary-stat-row">
         <span class="summary-stat-label">Hardly Coins</span>
-        <span class="summary-stat-val gold">🪙 ${coins}</span>
+        <span class="summary-stat-val gold">${ph('coin',14)} ${coins}</span>
       </div>
       <div class="summary-stat-row">
         <span class="summary-stat-label">Current Form</span>
-        <span class="summary-stat-val"><span class="form-pill ${form.cls}" style="font-size:11px">${form.emoji} ${form.label}</span></span>
+        <span class="summary-stat-val"><span class="form-pill ${form.cls}" style="font-size:11px">${ph(form.icon, 12)} ${form.label}</span></span>
       </div>
       <div class="progress-bar-wrap" style="margin-top:10px">
         <div class="progress-bar-label">
@@ -2083,12 +1918,12 @@ function renderSummary() {
         </div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${lvl.pct}%"></div></div>
       </div>
-      ${badge10 ? `<div style="margin-top:12px"><span class="unlock-badge">🏅 Contender</span></div>` : ""}
+      ${badge10 ? `<div style="margin-top:12px"><span class="unlock-badge">${ph('medal',12)} Contender</span></div>` : ""}
       <div style="margin-top:10px">${unlocksHtml}</div>
     </div>
 
     <div class="summary-card">
-      <div class="summary-card-title">Boss Days 👹</div>
+      <div class="summary-card-title">Boss Days</div>
       <div class="boss-record">
         <div class="boss-record-stat">
           <div class="boss-record-val" style="color:var(--green)">${boss.wins}</div>
@@ -2104,7 +1939,7 @@ function renderSummary() {
         </div>
       </div>
       <div style="font-size:11px;color:var(--text-mute);margin-top:8px">
-        Every Sunday. Win with 3/3 core goals for double XP. Lose with a partial day = −1 coin.
+        Every Sunday. Win with 3/3 core for double XP. Lose with a partial day = −1 coin.
       </div>
     </div>
 
@@ -2199,9 +2034,9 @@ function renderSummary() {
           ${sleepTargetRate !== null ? srow("Sleep target met", sleepTargetRate + "%", `(${sleepTargetMetDays.length}/${sleepTargetDays.length} nights)`) : ""}
         ` : ""}
         ${jKeys.length ? `
-          <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:12px;margin-bottom:8px">📓 Journal</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:12px;margin-bottom:8px;display:flex;align-items:center;gap:5px">${ph('note-pencil',11)} Journal</div>
           ${srow("Journal rate", jRate + "%", `${jKeys.length} days`)}
-          ${jStreak > 0 ? srow("Current streak", jStreak + (jStreak === 1 ? " day" : " days"), jStreak >= 7 ? "🔥🔥" : jStreak >= 3 ? "🔥" : "") : ""}
+          ${jStreak > 0 ? srow("Current streak", jStreak + (jStreak === 1 ? " day" : " days"), jStreak >= 7 ? `<span style="color:var(--orange)">${ph('fire',12)}${ph('fire',12)}</span>` : jStreak >= 3 ? `<span style="color:var(--orange)">${ph('fire',12)}</span>` : "") : ""}
         ` : ""}
       </div>`;
     })()}
@@ -2210,20 +2045,20 @@ function renderSummary() {
       <div class="summary-card-title">Core streaks</div>
       ${CORE_GOALS.map(g => {
         const s    = currentStreak(g.id);
-        const fire = s >= 7 ? " 🔥🔥" : s >= 3 ? " 🔥" : "";
+        const fire = s >= 7 ? ` <span style="color:var(--orange)">${ph('fire',14)}${ph('fire',14)}</span>` : s >= 3 ? ` <span style="color:var(--orange)">${ph('fire',14)}</span>` : "";
         return `<div class="streak-row">
-          <div class="streak-icon">${g.icon}</div>
+          <div class="streak-icon">${ph(g.icon, 16)}</div>
           <div class="streak-name">${g.label}</div>
           <div class="streak-val">${s} ${s === 1 ? "day" : "days"}${fire}</div>
         </div>`;
       }).join("")}
-      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--text-mute)">
-        <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Bonus streaks</div>
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Bonus streaks</div>
         ${BONUS_GOALS.map(g => {
           const s = currentStreak(g.id);
-          const fire = s >= 7 ? " 🔥🔥" : s >= 3 ? " 🔥" : "";
+          const fire = s >= 7 ? ` <span style="color:var(--orange)">${ph('fire',14)}${ph('fire',14)}</span>` : s >= 3 ? ` <span style="color:var(--orange)">${ph('fire',14)}</span>` : "";
           return `<div class="streak-row">
-            <div class="streak-icon">${g.icon}</div>
+            <div class="streak-icon">${ph(g.icon, 16)}</div>
             <div class="streak-name" style="color:var(--text-mute)">${g.label}</div>
             <div class="streak-val" style="color:var(--gold)">${s} ${s === 1 ? "day" : "days"}${fire}</div>
           </div>`;
@@ -2233,21 +2068,21 @@ function renderSummary() {
 
     <div class="summary-card">
       <div class="summary-card-title">Goal breakdown</div>
-      <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px">Core</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:8px">Core</div>
       ${CORE_GOALS.map(g => {
         const count = allKeys.filter(k => data[k]?.[g.id]).length;
         const pct   = totalDays ? Math.round(100 * count / totalDays) : 0;
         return `<div class="progress-bar-wrap" style="margin-bottom:12px">
-          <div class="progress-bar-label"><span>${g.icon} ${g.label}</span><span>${pct}%</span></div>
+          <div class="progress-bar-label"><span style="display:flex;align-items:center;gap:5px">${ph(g.icon,12)} ${g.label}</span><span>${pct}%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
         </div>`;
       }).join("")}
-      <div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:4px;margin-bottom:8px">⭐ Bonus</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--gold);margin-top:4px;margin-bottom:8px">${ph('star',10)} Bonus</div>
       ${BONUS_GOALS.map(g => {
         const count = allKeys.filter(k => data[k]?.[g.id]).length;
         const pct   = totalDays ? Math.round(100 * count / totalDays) : 0;
         return `<div class="progress-bar-wrap" style="margin-bottom:12px">
-          <div class="progress-bar-label"><span>${g.icon} ${g.label}</span><span style="color:var(--gold)">${pct}%</span></div>
+          <div class="progress-bar-label"><span style="display:flex;align-items:center;gap:5px">${ph(g.icon,12)} ${g.label}</span><span style="color:var(--gold)">${pct}%</span></div>
           <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:var(--gold-dim)"></div></div>
         </div>`;
       }).join("")}
@@ -2504,7 +2339,6 @@ function confirmEveningReflection() {
 function renderCheckinSection() {
   const el = document.getElementById("checkin-section");
   if (!el) return;
-  // Only show for today
   if (!isToday(currentDate)) { el.innerHTML = ""; return; }
 
   const hour = new Date().getHours();
@@ -2517,25 +2351,22 @@ function renderCheckinSection() {
     const nonnegGoal = day.morning_nonneg ? CORE_GOALS.find(g => g.id === day.morning_nonneg) : null;
     const nonnegHit  = day.morning_nonneg && day[day.morning_nonneg];
     html += `<div class="checkin-card checkin-done">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:20px;line-height:1">☀️</span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="color:var(--green);font-size:22px;line-height:1">${ph('sun', 22)}</span>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:var(--green)">Morning set ✓</div>
-          ${day.morning_intention
-            ? `<div style="font-size:11px;color:var(--text-dim);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${day.morning_intention.slice(0,60)}"</div>`
-            : ""}
-          ${nonnegGoal
-            ? `<div style="font-size:11px;color:var(--text-mute);margin-top:2px">${nonnegGoal.icon} ${nonnegGoal.label.split('+')[0].trim()} — ${nonnegHit ? '<span style="color:var(--green)">✓ done</span>' : '<span style="color:var(--text-mute)">pending</span>'}</div>`
-            : ""}
+          <div style="font-size:13px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.06em">Morning Set</div>
+          ${day.morning_intention ? `<div style="font-size:12px;color:var(--text-dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">"${day.morning_intention.slice(0,60)}"</div>` : ""}
+          ${nonnegGoal ? `<div style="font-size:11px;color:var(--text-mute);margin-top:3px;display:flex;align-items:center;gap:4px">${ph(nonnegGoal.icon, 12)} ${nonnegGoal.label.split('+')[0].trim()} — ${nonnegHit ? '<span style="color:var(--green);font-weight:700">done</span>' : '<span style="color:var(--text-mute)">pending</span>'}</div>` : ""}
         </div>
+        <span style="color:var(--green);font-size:18px">${ph('check-circle', 18)}</span>
       </div>
     </div>`;
   } else if (hour >= 5 && hour < 10) {
     html += `<div class="checkin-card checkin-morning">
       <div class="checkin-header">
-        <span class="checkin-icon">☀️</span>
+        <span class="checkin-icon" style="color:var(--gold)">${ph('sun', 24)}</span>
         <div>
-          <div class="checkin-title">Morning Check-in</div>
+          <div class="checkin-title">Good Morning</div>
           <div class="checkin-subtitle">Set the tone for today</div>
         </div>
       </div>
@@ -2549,23 +2380,23 @@ function renderCheckinSection() {
         <div class="nonneg-row">
           ${CORE_GOALS.map(g => {
             const lbl = g.label.split('+')[0].trim().split(' ').slice(0,2).join(' ');
-            return `<div class="nonneg-chip" data-id="${g.id}" onclick="setMorningNonneg('${g.id}')">${g.icon} ${lbl}</div>`;
+            return `<div class="nonneg-chip" data-id="${g.id}" onclick="setMorningNonneg('${g.id}')">${ph(g.icon, 14)} ${lbl}</div>`;
           }).join('')}
         </div>
       </div>
       <div class="checkin-field">
         <div class="checkin-label">Planning to journal today?</div>
         <div class="yesno-row">
-          <button class="yesno-btn" data-val="yes" onclick="setMorningJournal(true)">📓 Yes, write</button>
-          <button class="yesno-btn" data-val="no"  onclick="setMorningJournal(false)">Skip today</button>
+          <button class="yesno-btn" data-val="yes" onclick="setMorningJournal(true)">${ph('note-pencil', 14)} Yes, write</button>
+          <button class="yesno-btn" data-val="no"  onclick="setMorningJournal(false)">${ph('x', 14)} Skip today</button>
         </div>
       </div>
-      <button class="checkin-btn" onclick="confirmMorningCheckin()">Set intention ✓</button>
+      <button class="checkin-btn" onclick="confirmMorningCheckin()">Set Intention</button>
     </div>`;
   } else if (hour >= 10) {
     html += `<div class="checkin-card checkin-missed" style="padding:10px 14px">
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-mute)">
-        <span>☀️</span> No morning intention set
+        ${ph('sun', 14)} No morning intention set
       </div>
     </div>`;
   }
@@ -2574,52 +2405,54 @@ function renderCheckinSection() {
   if (day.evening_checked_in) {
     const r = day.evening_rating || 0;
     const rLabel = r >= 5 ? "excellent!" : r >= 4 ? "great day" : r >= 3 ? "solid" : r >= 2 ? "tough" : r >= 1 ? "rough" : "";
+    const starsHtml = r > 0 ? Array.from({length:5}, (_,i) => `<span style="color:${i<r?'var(--gold)':'var(--border)'};">${ph('star', 14)}</span>`).join('') : '';
     html += `<div class="checkin-card checkin-done">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:20px;line-height:1">🌙</span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="color:var(--green);font-size:22px;line-height:1">${ph('moon', 22)}</span>
         <div>
-          <div style="font-size:13px;font-weight:600;color:var(--green)">Evening reflected ✓</div>
-          ${r > 0 ? `<div style="font-size:12px;color:var(--text-dim);margin-top:1px">${'⭐'.repeat(r)} ${rLabel}</div>` : ""}
+          <div style="font-size:13px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:0.06em">Reflected</div>
+          ${r > 0 ? `<div style="display:flex;align-items:center;gap:4px;margin-top:3px">${starsHtml}<span style="font-size:11px;color:var(--text-mute);margin-left:4px">${rLabel}</span></div>` : ""}
         </div>
+        <span style="margin-left:auto;color:var(--green);font-size:18px">${ph('check-circle', 18)}</span>
       </div>
     </div>`;
   } else if (hour >= 19 && hour < 23) {
     const er = eveningDraft.rating;
     html += `<div class="checkin-card checkin-evening">
       <div class="checkin-header">
-        <span class="checkin-icon">🌙</span>
+        <span class="checkin-icon" style="color:#6aacff">${ph('moon', 24)}</span>
         <div>
-          <div class="checkin-title checkin-title-eve">Evening Reflection</div>
+          <div class="checkin-title checkin-title-eve">Good Evening</div>
           <div class="checkin-subtitle">How did today go?</div>
         </div>
       </div>
       <div class="checkin-field">
-        <div class="checkin-label" style="color:#6880a8">Rate your day</div>
+        <div class="checkin-label" style="color:#4a6a9a">Rate your day</div>
         <div class="star-row">
-          ${[1,2,3,4,5].map(n => `<span class="star-btn${n <= er ? ' lit' : ''}" onclick="setEveningRating(${n})">⭐</span>`).join('')}
+          ${[1,2,3,4,5].map(n => `<span class="star-btn${n <= er ? ' lit' : ''}" onclick="setEveningRating(${n})">${ph('star', 32)}</span>`).join('')}
         </div>
       </div>
       <div class="checkin-field">
-        <div class="checkin-label" style="color:#6880a8">What made today hard?</div>
+        <div class="checkin-label" style="color:#4a6a9a">What made today hard?</div>
         <textarea class="checkin-input" id="evening-hard-input"
-          placeholder="Friction, obstacles, what dragged…" style="border-color:rgba(100,130,200,0.2)"></textarea>
+          placeholder="Friction, obstacles, what dragged…" style="border-color:#1a2a3a"></textarea>
       </div>
       <div class="checkin-field">
-        <div class="checkin-label" style="color:#6880a8">What are you proud of?</div>
+        <div class="checkin-label" style="color:#4a6a9a">What are you proud of?</div>
         <textarea class="checkin-input" id="evening-proud-input"
-          placeholder="Wins, moments, progress made…" style="border-color:rgba(100,130,200,0.2)"></textarea>
+          placeholder="Wins, moments, progress made…" style="border-color:#1a2a3a"></textarea>
       </div>
       <div class="checkin-field">
-        <div class="checkin-label" style="color:#6880a8">Sleep target tonight (hrs)</div>
+        <div class="checkin-label" style="color:#4a6a9a">Sleep target tonight (hrs)</div>
         <input class="checkin-input" id="evening-sleep-target" type="number" inputmode="decimal"
-          placeholder="8" step="0.5" min="4" max="12" style="width:90px;border-color:rgba(100,130,200,0.2)">
+          placeholder="8" step="0.5" min="4" max="12" style="width:90px;border-color:#1a2a3a">
       </div>
-      <button class="checkin-btn checkin-btn-eve" onclick="confirmEveningReflection()">Log reflection ✓</button>
+      <button class="checkin-btn checkin-btn-eve" onclick="confirmEveningReflection()">Log Reflection</button>
     </div>`;
   } else if (hour >= 23) {
     html += `<div class="checkin-card checkin-missed" style="padding:10px 14px">
       <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-mute)">
-        <span>🌙</span> Evening reflection missed — catch it tomorrow
+        ${ph('moon', 14)} Evening reflection missed
       </div>
     </div>`;
   }
