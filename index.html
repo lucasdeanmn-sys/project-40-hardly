@@ -1160,7 +1160,10 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
       </div>
     </div>
     <div class="push-add-row">
-      ${[2,5,7,10].map(n => `<button type="button" class="push-quick-btn" onclick="addPushups(${n})">+${n}</button>`).join('')}
+      <button type="button" class="push-quick-btn" onclick="addPushups(2)">+2</button>
+      <button type="button" class="push-quick-btn" onclick="addPushups(5)">+5</button>
+      <button type="button" class="push-quick-btn" onclick="addPushups(7)">+7</button>
+      <button type="button" class="push-quick-btn" onclick="addPushups(10)">+10</button>
       <input class="push-manual-input" id="push-manual-input" type="number" inputmode="numeric"
         placeholder="…" min="1"
         onkeydown="if(event.key==='Enter'){addPushupsManual();event.preventDefault()}">
