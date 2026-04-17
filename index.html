@@ -555,6 +555,80 @@ body {
 }
 .modal-btn.secondary { background: none; border: 1px solid var(--border); color: var(--text-dim); }
 
+/* ── Settings panel ── */
+.settings-gear-btn {
+  background: none; border: none; color: var(--text-mute);
+  cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center;
+  min-width: 32px; min-height: 32px; border-radius: 8px;
+  transition: color 0.15s; -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.settings-gear-btn:active { color: var(--text); }
+.settings-panel {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg); display: flex; flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+  animation: settingsFadeIn 0.2s ease;
+}
+@keyframes settingsFadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.settings-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.settings-title {
+  font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.01em;
+}
+.settings-close-btn {
+  background: none; border: none; color: var(--text-mute); cursor: pointer;
+  font-size: 24px; line-height: 1; padding: 4px; min-width: 36px; min-height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: color 0.15s;
+}
+.settings-close-btn:active { color: var(--text); }
+.settings-body { flex: 1; overflow-y: auto; padding: 24px 20px; }
+.settings-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-mute); margin-bottom: 12px;
+}
+.settings-field { margin-bottom: 20px; }
+.settings-field-label {
+  font-size: 13px; font-weight: 600; color: var(--text-dim); margin-bottom: 8px;
+  display: block;
+}
+.settings-input-wrap {
+  display: flex; align-items: center; gap: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.settings-input-wrap:focus-within { border-color: #444; }
+.settings-key-input {
+  flex: 1; background: none; border: none; color: var(--text);
+  font-size: 14px; padding: 12px 14px; outline: none; font-family: inherit;
+  min-width: 0;
+}
+.settings-eye-btn {
+  background: none; border: none; color: var(--text-mute); cursor: pointer;
+  padding: 10px 14px; display: flex; align-items: center;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: color 0.15s; flex-shrink: 0;
+}
+.settings-eye-btn:active { color: var(--text-dim); }
+.settings-hint {
+  font-size: 12px; color: var(--text-mute); line-height: 1.5; margin-top: 8px;
+}
+.settings-save-btn {
+  width: 100%; padding: 14px; background: var(--gold); color: #000;
+  border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+  cursor: pointer; margin-top: 8px; touch-action: manipulation;
+  transition: opacity 0.15s; -webkit-tap-highlight-color: transparent;
+}
+.settings-save-btn:active { opacity: 0.85; }
+.settings-saved-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--green); font-weight: 600; margin-top: 10px;
+}
+
 /* ── Strava ── */
 .strava-connect-btn {
   display: flex; align-items: center; justify-content: center; gap: 9px;
@@ -965,7 +1039,8 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
 
 <div class="header">
   <div class="header-top">
-    <div class="app-title">
+    <div class="app-title" style="display:flex;align-items:center;gap:8px">
+      <button class="settings-gear-btn" id="settings-gear-btn" onclick="openSettings()" aria-label="Settings"></button>
       Project 40 Hardly
       <span id="sync-dot" class="sync-dot" onclick="openSetupModal()"></span>
     </div>
@@ -980,6 +1055,33 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
     <button id="prev-day" onclick="shiftDay(-1)">‹</button>
     <div class="date-display" id="date-display"></div>
     <button id="next-day" onclick="shiftDay(1)">›</button>
+  </div>
+</div>
+
+<!-- Settings panel -->
+<div id="settings-panel" class="settings-panel" style="display:none">
+  <div class="settings-header">
+    <div class="settings-title">Settings</div>
+    <button class="settings-close-btn" onclick="closeSettings()">×</button>
+  </div>
+  <div class="settings-body">
+    <div class="settings-section-label">AI Analysis</div>
+    <div class="settings-field">
+      <label class="settings-field-label" for="settings-api-key">Anthropic API Key</label>
+      <div class="settings-input-wrap">
+        <input class="settings-key-input" id="settings-api-key" type="password"
+          placeholder="sk-ant-…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button type="button" class="settings-eye-btn" id="settings-eye-btn" onclick="toggleKeyVisibility()">
+          <span id="settings-eye-icon"></span>
+        </button>
+      </div>
+      <div class="settings-hint">Required for AI journal analysis. Your key is stored locally on this device only and never sent anywhere except Anthropic's API.</div>
+      <div id="settings-saved-msg" style="display:none" class="settings-saved-badge">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,7 6,11 12,3"/></svg>
+        Saved
+      </div>
+    </div>
+    <button class="settings-save-btn" onclick="saveSettings()">Save</button>
   </div>
 </div>
 
@@ -1138,6 +1240,9 @@ const PH_ICONS = {
   'snowflake': `<path d="M227.65,149.14a12,12,0,0,1-8.79,14.51l-20.67,5.08,5.4,20.16a12,12,0,0,1-23.18,6.22l-7.29-27.2L140,148.78V187l20.48,20.48a12,12,0,0,1-17,17L128,209l-15.51,15.52a12,12,0,0,1-17-17L116,187V148.78L82.88,167.91l-7.29,27.2a12,12,0,0,1-23.18-6.22l5.4-20.16-20.67-5.08a12,12,0,1,1,5.72-23.3l27.89,6.85L104,128,70.75,108.8l-27.89,6.85A11.8,11.8,0,0,1,40,116a12,12,0,0,1-2.85-23.65l20.67-5.08-5.4-20.16a12,12,0,0,1,23.18-6.22l7.29,27.2L116,107.21V69L95.52,48.48a12,12,0,0,1,17-17L128,47l15.51-15.52a12,12,0,1,1,17,17L140,69v38.24l33.12-19.12,7.29-27.2a12,12,0,0,1,23.18,6.22l-5.4,20.16,20.67,5.08A12,12,0,0,1,216,116a11.8,11.8,0,0,1-2.87-.35l-27.89-6.85L152,128l33.25,19.2,27.89-6.85A12,12,0,0,1,227.65,149.14Z"/>`,
   'check-circle': `<path d="M176.49,95.51a12,12,0,0,1,0,17l-56,56a12,12,0,0,1-17,0l-24-24a12,12,0,1,1,17-17L112,143l47.51-47.52A12,12,0,0,1,176.49,95.51ZM236,128A108,108,0,1,1,128,20,108.12,108.12,0,0,1,236,128Zm-24,0a84,84,0,1,0-84,84A84.09,84.09,0,0,0,212,128Z"/>`,
   'book-bookmark': `<path d="M208,20H72A36,36,0,0,0,36,56V224a12,12,0,0,0,12,12H192a12,12,0,0,0,0-24H60v-4a12,12,0,0,1,12-12H208a12,12,0,0,0,12-12V32A12,12,0,0,0,208,20ZM120,44h36v59l-10.51-8.41a12,12,0,0,0-15,0L120,103Zm76,128H72a35.59,35.59,0,0,0-12,2.06V56A12,12,0,0,1,72,44H96v84a12,12,0,0,0,19.5,9.37l22.49-18,22.51,18A12,12,0,0,0,180,128V44h16Z"/>`,
+  'gear': `<path d="M128,76a52,52,0,1,0,52,52A52.06,52.06,0,0,0,128,76Zm0,80a28,28,0,1,1,28-28A28,28,0,0,1,128,156Zm92-27.21v-1.58l14-17.51a12,12,0,0,0,2.23-10.59A111.75,111.75,0,0,0,225,71.89,12,12,0,0,0,215.89,66L193.61,63.5l-1.11-1.11L190,40.1A12,12,0,0,0,184.11,31a111.67,111.67,0,0,0-27.23-11.27A12,12,0,0,0,146.3,22L128.79,36h-1.58L109.7,22a12,12,0,0,0-10.59-2.23A111.75,111.75,0,0,0,71.89,31.05,12,12,0,0,0,66,40.11L63.5,62.39,62.39,63.5,40.1,66A12,12,0,0,0,31,71.89,111.67,111.67,0,0,0,19.77,99.12,12,12,0,0,0,22,109.7l14,17.51v1.58L22,146.3a12,12,0,0,0-2.23,10.59,111.75,111.75,0,0,0,11.29,27.22A12,12,0,0,0,40.11,190l22.28,2.48,1.11,1.11L66,215.9A12,12,0,0,0,71.89,225a111.67,111.67,0,0,0,27.23,11.27A12,12,0,0,0,109.7,234l17.51-14h1.58l17.51,14a12,12,0,0,0,10.59,2.23A111.75,111.75,0,0,0,184.11,225a12,12,0,0,0,5.91-9.06l2.48-22.28,1.11-1.11L215.9,190a12,12,0,0,0,9.06-5.91,111.67,111.67,0,0,0,11.27-27.23A12,12,0,0,0,234,146.3Zm-24.12-4.89a70.1,70.1,0,0,1,0,8.2,12,12,0,0,0,2.61,8.22l12.84,16.05A86.47,86.47,0,0,1,207,166.86l-20.43,2.27a12,12,0,0,0-7.65,4,69,69,0,0,1-5.8,5.8,12,12,0,0,0-4,7.65L166.86,207a86.47,86.47,0,0,1-10.49,4.35l-16.05-12.85a12,12,0,0,0-7.5-2.62c-.24,0-.48,0-.72,0a70.1,70.1,0,0,1-8.2,0,12.06,12.06,0,0,0-8.22,2.6L99.63,211.33A86.47,86.47,0,0,1,89.14,207l-2.27-20.43a12,12,0,0,0-4-7.65,69,69,0,0,1-5.8-5.8,12,12,0,0,0-7.65-4L49,166.86a86.47,86.47,0,0,1-4.35-10.49l12.84-16.05a12,12,0,0,0,2.61-8.22,70.1,70.1,0,0,1,0-8.2,12,12,0,0,0-2.61-8.22L44.67,99.63A86.47,86.47,0,0,1,49,89.14l20.43-2.27a12,12,0,0,0,7.65-4,69,69,0,0,1,5.8-5.8,12,12,0,0,0,4-7.65L89.14,49a86.47,86.47,0,0,1,10.49-4.35l16.05,12.85a12.06,12.06,0,0,0,8.22,2.6,70.1,70.1,0,0,1,8.2,0,12,12,0,0,0,8.22-2.6l16.05-12.85A86.47,86.47,0,0,1,166.86,49l2.27,20.43a12,12,0,0,0,4,7.65,69,69,0,0,1,5.8,5.8,12,12,0,0,0,7.65,4L207,89.14a86.47,86.47,0,0,1,4.35,10.49l-12.84,16.05A12,12,0,0,0,195.88,123.9Z"/>`,
+  'eye': `<path d="M251,123.13c-.37-.81-9.13-20.26-28.48-39.61C196.63,57.67,164,44,128,44S59.37,57.67,33.51,83.52C14.16,102.87,5.4,122.32,5,123.13a12.08,12.08,0,0,0,0,9.75c.37.82,9.13,20.26,28.49,39.61C59.37,198.34,92,212,128,212s68.63-13.66,94.48-39.51c19.36-19.35,28.12-38.79,28.49-39.61A12.08,12.08,0,0,0,251,123.13Zm-46.06,33C183.47,177.27,157.59,188,128,188s-55.47-10.73-76.91-31.88A130.36,130.36,0,0,1,29.52,128,130.45,130.45,0,0,1,51.09,99.89C72.54,78.73,98.41,68,128,68s55.46,10.73,76.91,31.89A130.36,130.36,0,0,1,226.48,128,130.45,130.45,0,0,1,204.91,156.12ZM128,84a44,44,0,1,0,44,44A44.05,44.05,0,0,0,128,84Zm0,64a20,20,0,1,1,20-20A20,20,0,0,1,128,148Z"/>`,
+  'eye-slash': `<path d="M56.88,31.93A12,12,0,1,0,39.12,48.07l16,17.65C20.67,88.66,5.72,121.58,5,123.13a12.08,12.08,0,0,0,0,9.75c.37.82,9.13,20.26,28.49,39.61C59.37,198.34,92,212,128,212a131.34,131.34,0,0,0,51-10l20.09,22.1a12,12,0,0,0,17.76-16.14ZM128,188c-29.59,0-55.47-10.73-76.91-31.88A130.69,130.69,0,0,1,29.52,128c5.27-9.31,18.79-29.9,42-44.29l90.09,99.11A109.33,109.33,0,0,1,128,188Zm123-55.12c-.36.81-9,20-28,39.16a12,12,0,1,1-17-16.9A130.48,130.48,0,0,0,226.48,128a130.36,130.36,0,0,0-21.57-28.12C183.46,78.73,157.59,68,128,68c-3.35,0-6.7.14-10,.42a12,12,0,1,1-2-23.91c3.93-.34,8-.51,12-.51,36,0,68.63,13.67,94.49,39.52,19.35,19.35,28.11,38.8,28.48,39.61A12.08,12.08,0,0,1,251,132.88Z"/>`,
   'thermometer': `<path d="M212,52a32,32,0,1,0,32,32A32,32,0,0,0,212,52Zm0,40a8,8,0,1,1,8-8A8,8,0,0,1,212,92ZM160,56A52,52,0,0,0,56,56v94.69a64,64,0,1,0,104,0ZM108,228a40,40,0,0,1-30.91-65.39A12,12,0,0,0,80,154.78V56a28,28,0,0,1,56,0v98.77a12,12,0,0,0,2.77,7.68A40,40,0,0,1,108,228Zm24-40a24,24,0,1,1-36-20.78V92a12,12,0,0,1,24,0v75.22A24,24,0,0,1,132,188Z"/>`,
   'skull': `<path d="M116,132a24,24,0,1,1-24-24A24,24,0,0,1,116,132Zm48-24a24,24,0,1,0,24,24A24,24,0,0,0,164,108Zm72,8c0,29.85-13.05,57.78-36,77.52V216a20,20,0,0,1-20,20H76a20,20,0,0,1-20-20V193.52c-23-19.74-36-47.67-36-77.52C20,58.65,68.45,12,128,12S236,58.65,236,116Zm-24,0c0-44.11-37.68-80-84-80S44,71.89,44,116c0,24.31,11.41,47,31.31,62.3A12,12,0,0,1,80,187.82V212H96V192a12,12,0,0,1,24,0v20h16V192a12,12,0,0,1,24,0v20h16V187.82a12,12,0,0,1,4.69-9.51C200.59,163,212,140.31,212,116Z"/>`,
   'trophy': `<path d="M232,60H212V48a12,12,0,0,0-12-12H56A12,12,0,0,0,44,48V60H24A20,20,0,0,0,4,80V96a44.05,44.05,0,0,0,44,44h.77A84.18,84.18,0,0,0,116,195.15V212H96a12,12,0,0,0,0,24h64a12,12,0,0,0,0-24H140V195.11c30.94-4.51,56.53-26.2,67-55.11h1a44.05,44.05,0,0,0,44-44V80A20,20,0,0,0,232,60ZM28,96V84H44v28c0,1.21,0,2.41.09,3.61A20,20,0,0,1,28,96Zm160,15.1c0,33.33-26.71,60.65-59.54,60.9A60,60,0,0,1,68,112V60H188ZM228,96a20,20,0,0,1-16.12,19.62c.08-1.5.12-3,.12-4.52V84h16Z"/>`,
@@ -1703,6 +1808,47 @@ function load() {
 }
 
 // ── Setup modal ──
+// ── Settings panel ──
+function openSettings() {
+  const input = document.getElementById("settings-api-key");
+  if (input) {
+    input.value = localStorage.getItem("anthropic_api_key") || "";
+    input.type = "password";
+  }
+  const eyeIcon = document.getElementById("settings-eye-icon");
+  if (eyeIcon) eyeIcon.innerHTML = ph("eye", 18);
+  const savedMsg = document.getElementById("settings-saved-msg");
+  if (savedMsg) savedMsg.style.display = "none";
+  document.getElementById("settings-panel").style.display = "flex";
+}
+
+function closeSettings() {
+  document.getElementById("settings-panel").style.display = "none";
+}
+
+function toggleKeyVisibility() {
+  const input = document.getElementById("settings-api-key");
+  const icon  = document.getElementById("settings-eye-icon");
+  if (!input) return;
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  if (icon) icon.innerHTML = ph(isHidden ? "eye-slash" : "eye", 18);
+}
+
+function saveSettings() {
+  const val = (document.getElementById("settings-api-key")?.value || "").trim();
+  if (val) {
+    localStorage.setItem("anthropic_api_key", val);
+  } else {
+    localStorage.removeItem("anthropic_api_key");
+  }
+  const savedMsg = document.getElementById("settings-saved-msg");
+  if (savedMsg) {
+    savedMsg.style.display = "inline-flex";
+    setTimeout(() => { savedMsg.style.display = "none"; }, 2500);
+  }
+}
+
 function openSetupModal() {
   document.getElementById("token-input").value = getSyncToken();
   document.getElementById("setup-modal").style.display = "flex";
@@ -3341,6 +3487,8 @@ document.getElementById("weight-card-icon").innerHTML   = ph("scales", 18);
 document.getElementById("sleep-card-icon").innerHTML    = ph("moon", 18);
 document.getElementById("protein-tracker-icon").innerHTML = ph("fork-knife", 18);
 document.getElementById("nav-icon-journal").innerHTML  = ph("book-bookmark", 22);
+document.getElementById("settings-gear-btn").innerHTML = ph("gear", 20);
+document.getElementById("settings-eye-icon").innerHTML = ph("eye", 18);
 
 load();
 applyTheme();
