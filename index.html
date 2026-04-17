@@ -294,19 +294,18 @@ body {
 .protein-entry-del:active { color: var(--red); }
 .metric-dot { font-size: 13px; line-height: 1; display: flex; align-items: center; }
 
-/* ── Pushup counter ── */
-.pushup-counter {
-  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+/* ── Quick Push tracker ── */
+.push-tracker {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px; margin-top: 8px;
 }
-.pushup-total {
-  font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px;
-  display: flex; align-items: center; gap: 6px;
-}
-.pushup-total-num { font-size: 22px; font-weight: 700; color: var(--text); }
-.pushup-quick-row {
-  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
-}
-.pushup-quick-btn {
+.push-tracker-row { display: flex; align-items: center; gap: 10px; }
+.push-total-val { font-size: 22px; font-weight: 700; color: var(--text); min-width: 36px; text-align: right; line-height: 1; }
+.push-bar-bg { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 10px; }
+.push-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease, background 0.3s ease; }
+.push-bar-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-mute); margin-top: 3px; }
+.push-add-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 10px; }
+.push-quick-btn {
   background: var(--surface2); border: 1px solid var(--border);
   color: var(--text-dim); border-radius: 8px;
   padding: 0; min-width: 44px; min-height: 36px;
@@ -314,23 +313,29 @@ body {
   transition: background 0.15s, color 0.15s;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
-.pushup-quick-btn:active { background: var(--border); color: var(--text); }
-.pushup-manual-input {
+.push-quick-btn:active { background: var(--border); color: var(--text); }
+.push-manual-input {
   background: var(--surface2); border: 1px solid var(--border);
   color: var(--text); border-radius: 8px; padding: 0 8px;
   font-size: 13px; font-weight: 600; width: 52px; height: 36px;
-  text-align: center; -webkit-appearance: none;
+  text-align: center; -webkit-appearance: none; -moz-appearance: textfield;
 }
-.pushup-manual-input::-webkit-inner-spin-button,
-.pushup-manual-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pushup-manual-input { -moz-appearance: textfield; }
-.pushup-manual-input::placeholder { color: var(--text-mute); }
-.pushup-reset-btn {
+.push-manual-input::-webkit-inner-spin-button,
+.push-manual-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.push-manual-input::placeholder { color: var(--text-mute); }
+.push-reset-btn {
   background: none; border: none; color: var(--text-mute);
   font-size: 11px; cursor: pointer; padding: 4px 6px; margin-left: auto;
   -webkit-tap-highlight-color: transparent;
 }
-.pushup-reset-btn:active { color: var(--red); }
+.push-reset-btn:active { color: var(--red); }
+.push-century-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  animation: centuryPop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes centuryPop { 0%{opacity:0;transform:scale(0.7)} 60%{opacity:1;transform:scale(1.12)} 100%{transform:scale(1)} }
 
 /* ── Week view ── */
 .week-nav {
@@ -1138,6 +1143,31 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
     <div id="protein-entries" class="protein-entries" style="display:none"></div>
   </div>
 
+  <div class="push-tracker" style="margin-top:8px">
+    <div class="push-tracker-row">
+      <div class="data-card-icon" id="push-tracker-icon"></div>
+      <div class="data-card-label">QUICK PUSH</div>
+      <div style="flex:1"></div>
+      <span class="push-total-val" id="push-total-display">0</span>
+      <span class="data-card-unit" style="font-size:13px">reps</span>
+      <span id="push-century" style="margin-left:6px"></span>
+    </div>
+    <div id="push-progress" style="display:none">
+      <div class="push-bar-bg"><div id="push-bar-fill" class="push-bar-fill" style="width:0%"></div></div>
+      <div class="push-bar-labels">
+        <span id="push-bar-label"></span>
+        <span>goal 100</span>
+      </div>
+    </div>
+    <div class="push-add-row">
+      ${[2,5,7,10].map(n => `<button type="button" class="push-quick-btn" onclick="addPushups(${n})">+${n}</button>`).join('')}
+      <input class="push-manual-input" id="push-manual-input" type="number" inputmode="numeric"
+        placeholder="…" min="1"
+        onkeydown="if(event.key==='Enter'){addPushupsManual();event.preventDefault()}">
+      <button type="button" class="push-reset-btn" onclick="resetPushups()">Reset</button>
+    </div>
+  </div>
+
   <div class="data-section-label" style="margin-top:24px">Stats</div>
 
   <div class="data-card" onclick="document.getElementById('weight-input').focus()">
@@ -1275,7 +1305,7 @@ const GOALS = [
   { id: "reading",   label: "Read",                      sub: "fiction or non-fiction, 10+ pages", icon: "book-open",    group: "core"  },
   { id: "walk",      label: "Morning Walk",               sub: "outside time",                      icon: "footprints",        group: "bonus", xp: 5  },
   { id: "yoga",      label: "Yoga / Stretching",          sub: "morning or night",                  icon: "person-simple-tai-chi", group: "bonus", xp: 5  },
-  { id: "pushups",   label: "Pee Pushups",                sub: "every time",                        icon: "lightning",         group: "bonus", xp: 5  },
+  { id: "pushups",   label: "Quick Push",                 sub: "opportunistic reps throughout the day", icon: "person-simple-tai-chi", group: "bonus", xp: 5  },
   { id: "core_work", label: "Core Work",                  sub: "planks, abs, etc.",                 icon: "sparkle",           group: "bonus", xp: 5  },
   { id: "journal",   label: "Morning Journal",            sub: "intentions + reflections written",  icon: "note-pencil",       group: "bonus", xp: 5  },
   { id: "protein_goal", label: "Protein",                 sub: "130g+ hit today",                   icon: "egg",               group: "bonus", xp: 5  },
@@ -1462,18 +1492,22 @@ function removeProteinEntry(idx) {
   updateProteinBar();
 }
 
-// ── Pushups ──
+// ── Quick Push ──
+const PUSH_TARGET = 100;
+
 function addPushups(n) {
   const key = toKey(currentDate);
   if (!data[key]) data[key] = {};
-  data[key].pushup_count = (data[key].pushup_count || 0) + n;
-  if (!data[key].pushups) { data[key].pushups = true; }
+  const prev = data[key].pushup_count || 0;
+  data[key].pushup_count = prev + n;
+  // Auto-check goal on first rep
+  if (!data[key].pushups) { data[key].pushups = true; renderGoals(); }
   save();
-  renderGoals();
+  updatePushupTracker();
 }
 
 function addPushupsManual() {
-  const input = document.getElementById("pushup-manual");
+  const input = document.getElementById("push-manual-input");
   if (!input) return;
   const val = parseInt(input.value, 10);
   if (isNaN(val) || val <= 0) return;
@@ -1485,9 +1519,62 @@ function resetPushups() {
   const key = toKey(currentDate);
   if (!data[key]) return;
   data[key].pushup_count = 0;
-  data[key].pushups = false;
+  if (data[key].pushups_auto) {
+    data[key].pushups      = false;
+    data[key].pushups_auto = false;
+    renderGoals();
+  }
   save();
-  renderGoals();
+  updatePushupTracker();
+}
+
+function updatePushupTracker() {
+  const key   = toKey(currentDate);
+  const count = data[key]?.pushup_count || 0;
+  const totalEl    = document.getElementById("push-total-display");
+  const prog       = document.getElementById("push-progress");
+  const fill       = document.getElementById("push-bar-fill");
+  const lbl        = document.getElementById("push-bar-label");
+  const centuryEl  = document.getElementById("push-century");
+
+  if (totalEl) totalEl.textContent = count;
+
+  const color = count >= PUSH_TARGET ? "var(--green)"
+              : count >= 50          ? "var(--orange)"
+              : count > 0            ? "var(--red)"
+              : "";
+
+  if (prog) prog.style.display = count > 0 ? "block" : "none";
+  if (fill) {
+    fill.style.width      = count > 0 ? Math.min(100, Math.round(100 * count / PUSH_TARGET)) + "%" : "0%";
+    fill.style.background = color;
+  }
+  if (lbl) { lbl.textContent = count > 0 ? `${count} reps` : ""; lbl.style.color = color; }
+
+  // Century badge
+  if (centuryEl) {
+    if (count >= PUSH_TARGET) {
+      if (!centuryEl.hasChildNodes()) {
+        centuryEl.innerHTML = `<span class="push-century-badge">${ph('trophy', 13)} Century!</span>`;
+      }
+    } else {
+      centuryEl.innerHTML = "";
+    }
+  }
+
+  // Auto-check / uncheck goal at 100
+  if (!data[key]) data[key] = {};
+  if (count >= PUSH_TARGET) {
+    if (!data[key].pushups) {
+      data[key].pushups      = true;
+      data[key].pushups_auto = true;
+      renderGoals();
+    }
+  } else if (data[key].pushups_auto) {
+    data[key].pushups      = false;
+    data[key].pushups_auto = false;
+    renderGoals();
+  }
 }
 
 function pushupStatsFor(keys) {
@@ -1947,41 +2034,19 @@ function makeGoalCard(goal, key, isBonus) {
   const card = document.createElement("div");
   if (isBonus) {
     card.className = "goal-card bonus-goal" + (checked ? " bonus-checked" : "");
-    const isPushups = goal.id === "pushups";
-    const pushupTotal = isPushups ? (data[key]?.pushup_count || 0) : 0;
     card.innerHTML = `
       <div class="goal-icon">${ph(goal.icon, 18)}</div>
-      <div class="goal-text" style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:6px;justify-content:space-between">
-          <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
-          ${checked ? `<span class="bonus-xp-chip">+${goal.xp || 5} XP</span>` : ""}
-          <div class="goal-check" style="flex-shrink:0">
-            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="2,7 6,11 12,3"/>
-            </svg>
-          </div>
-        </div>
+      <div class="goal-text">
+        <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
         <div class="goal-sub">${goal.sub}</div>
-        ${isPushups ? `<div class="pushup-counter" onclick="event.stopPropagation()">
-          <div class="pushup-total">
-            <span class="pushup-total-num">${pushupTotal}</span>
-            <span>pushups today</span>
-          </div>
-          <div class="pushup-quick-row">
-            ${[2,5,7,10].map(n => `<button type="button" class="pushup-quick-btn" onclick="addPushups(${n})">+${n}</button>`).join('')}
-            <input class="pushup-manual-input" id="pushup-manual" type="number" inputmode="numeric"
-              placeholder="…" min="1"
-              onkeydown="if(event.key==='Enter'){addPushupsManual();event.preventDefault()}"
-              onclick="event.stopPropagation()">
-            <button type="button" class="pushup-reset-btn" onclick="resetPushups()">Reset</button>
-          </div>
-        </div>` : ""}
+      </div>
+      ${checked ? `<span class="bonus-xp-chip">+${goal.xp || 5} XP</span>` : ""}
+      <div class="goal-check">
+        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="2,7 6,11 12,3"/>
+        </svg>
       </div>`;
-    card.onclick = isPushups ? null : () => toggleGoal(key, goal.id);
-    if (isPushups) {
-      card.style.cursor = "default";
-      card.style.alignItems = "flex-start";
-    }
+    card.onclick = () => toggleGoal(key, goal.id);
     return card;
   } else {
     card.className = "goal-card" + (checked ? " checked" : "");
@@ -2077,6 +2142,7 @@ function updateInputs() {
   }
   updateSleepDot();
   updateProteinBar();
+  updatePushupTracker();
 }
 
 function renderToday() {
@@ -2587,10 +2653,10 @@ function renderSummary() {
           const pu30 = pushupStatsFor(last30Keys);
           const puAll = pushupStatsFor(allKeys);
           if (!puAll) return "";
-          return `<div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-top:12px;margin-bottom:8px">Pushups</div>
-            ${pu7  ? statRow("Last 7 days",  pu7.total.toLocaleString(),  `${pu7.days} active days`) : ""}
-            ${pu30 ? statRow("Last 30 days", pu30.total.toLocaleString(), `${pu30.days} active days`) : ""}
-            ${puAll ? statRow("All time",    puAll.total.toLocaleString(), `${puAll.days} days`) : ""}`;
+          return `<div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-top:12px;margin-bottom:8px">Quick Push</div>
+            ${pu7  ? statRow("Last 7 days",  pu7.total.toLocaleString()  + " reps", `${pu7.days} active days`) : ""}
+            ${pu30 ? statRow("Last 30 days", pu30.total.toLocaleString() + " reps", `${pu30.days} active days`) : ""}
+            ${puAll ? statRow("All time",    puAll.total.toLocaleString() + " reps", `${puAll.days} days`) : ""}`;
         })()}
         ${corr ? `
           <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:2px solid ${corr.positive ? "var(--gold)" : "var(--text-mute)"}">
@@ -2965,7 +3031,7 @@ async function runAIAnalysis() {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
-        system: `You are a performance coach analyzing data from someone tracking daily habits as part of a personal challenge called "Project 40 Hardly" — they are working toward their 40th birthday on September 28, 2026. They track three core goals (Coach Workout, Nutrition, Reading) and six bonus goals (Morning Walk, Yoga/Stretching, Pee Pushups, Core Work, Morning Journal, Protein 130g+). They also track sleep hours, protein intake, morning intentions, and evening reflections. Be direct, honest, and motivating — like a coach who has seen the data and is speaking frankly. No bullet lists — write flowing paragraphs as if talking to them.`,
+        system: `You are a performance coach analyzing data from someone tracking daily habits as part of a personal challenge called "Project 40 Hardly" — they are working toward their 40th birthday on September 28, 2026. They track three core goals (Coach Workout, Nutrition, Reading) and bonus goals including Morning Walk, Yoga/Stretching, Quick Push, Core Work, Morning Journal, and Protein 130g+. They also track sleep hours, protein intake, morning intentions, and evening reflections. Be direct, honest, and motivating — like a coach who has seen the data and is speaking frankly. No bullet lists — write flowing paragraphs as if talking to them.`,
         messages: [{
           role: 'user',
           content: `Here is my last 30 days of data:\n\n${payload}\n\nAnalyze my patterns. Cover: top 3 patterns or correlations, what my best days have in common, biggest recurring obstacles from the "what made today hard" entries, whether my sleep predicts goal completion, which goals I declare as non-negotiable but don't hit, one specific actionable recommendation, and an honest assessment of my trajectory toward September 28.`,
@@ -3496,6 +3562,7 @@ document.getElementById("nav-icon-summary").innerHTML = ph("chart-bar", 22);
 document.getElementById("weight-card-icon").innerHTML   = ph("scales", 18);
 document.getElementById("sleep-card-icon").innerHTML    = ph("moon", 18);
 document.getElementById("protein-tracker-icon").innerHTML = ph("fork-knife", 18);
+document.getElementById("push-tracker-icon").innerHTML    = ph("person-simple-tai-chi", 18);
 document.getElementById("nav-icon-journal").innerHTML  = ph("book-bookmark", 22);
 document.getElementById("settings-gear-btn").innerHTML = ph("gear", 20);
 document.getElementById("settings-eye-icon").innerHTML = ph("eye", 18);

@@ -1,4 +1,4 @@
-const CACHE = 'p40h-v16';
+const CACHE = 'p40h-v17';
 const PRECACHE = [
   '/',
   '/index.html',
