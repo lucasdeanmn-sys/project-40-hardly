@@ -294,6 +294,43 @@ body {
 .protein-entry-del:active { color: var(--red); }
 .metric-dot { font-size: 13px; line-height: 1; display: flex; align-items: center; }
 
+/* ── Pushup counter ── */
+.pushup-counter {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border);
+}
+.pushup-total {
+  font-size: 13px; font-weight: 700; color: var(--text-dim); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.pushup-total-num { font-size: 22px; font-weight: 700; color: var(--text); }
+.pushup-quick-row {
+  display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+}
+.pushup-quick-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text-dim); border-radius: 8px;
+  padding: 0; min-width: 44px; min-height: 36px;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.pushup-quick-btn:active { background: var(--border); color: var(--text); }
+.pushup-manual-input {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 8px; padding: 0 8px;
+  font-size: 13px; font-weight: 600; width: 52px; height: 36px;
+  text-align: center; -webkit-appearance: none;
+}
+.pushup-manual-input::-webkit-inner-spin-button,
+.pushup-manual-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pushup-manual-input::placeholder { color: var(--text-mute); }
+.pushup-reset-btn {
+  background: none; border: none; color: var(--text-mute);
+  font-size: 11px; cursor: pointer; padding: 4px 6px; margin-left: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+.pushup-reset-btn:active { color: var(--red); }
+
 /* ── Week view ── */
 .week-nav {
   display: flex; align-items: center;
@@ -805,17 +842,20 @@ textarea.checkin-input { resize: none; height: 60px; }
 .checkin-btn-eve { background: var(--blue); color: #fff; }
 
 /* Stars */
-.star-row { display: flex; gap: 8px; padding: 2px 0 12px; }
+.star-row { display: flex; gap: 4px; padding: 2px 0 12px; }
 .star-btn {
-  font-size: 32px; cursor: pointer; line-height: 1; user-select: none;
+  background: none; border: none; cursor: pointer; user-select: none;
   -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-  transition: transform 0.12s; color: var(--border);
+  padding: 6px; margin: 0;
+  min-width: 44px; min-height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--border);
+  transition: transform 0.12s, color 0.12s;
 }
-.star-btn i { font-size: 32px; line-height: 1; display: block; transition: color 0.12s, transform 0.12s; }
-.star-btn.lit i { color: var(--gold); }
-.star-btn:active i { transform: scale(0.85); }
+.star-btn.lit { color: var(--gold); }
+.star-btn:active { transform: scale(0.85); }
 @keyframes starPop { 0% { transform: scale(1); } 50% { transform: scale(1.35); } 100% { transform: scale(1.1); } }
-.star-btn.lit i { animation: starPop 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+.star-btn.lit { animation: starPop 0.25s cubic-bezier(0.34,1.56,0.64,1); }
 
 /* Non-neg chips */
 .nonneg-row { display: flex; gap: 6px; flex-wrap: wrap; }
@@ -1273,6 +1313,41 @@ function removeProteinEntry(idx) {
   updateProteinBar();
 }
 
+// ── Pushups ──
+function addPushups(n) {
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  data[key].pushup_count = (data[key].pushup_count || 0) + n;
+  if (!data[key].pushups) { data[key].pushups = true; }
+  save();
+  renderGoals();
+}
+
+function addPushupsManual() {
+  const input = document.getElementById("pushup-manual");
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val <= 0) return;
+  addPushups(val);
+  input.value = "";
+}
+
+function resetPushups() {
+  const key = toKey(currentDate);
+  if (!data[key]) return;
+  data[key].pushup_count = 0;
+  data[key].pushups = false;
+  save();
+  renderGoals();
+}
+
+function pushupStatsFor(keys) {
+  const vals = keys.map(k => data[k]?.pushup_count || 0);
+  const total = vals.reduce((s, x) => s + x, 0);
+  const days  = vals.filter(v => v > 0).length;
+  return total > 0 ? { total, days } : null;
+}
+
 // ── Sleep/Protein summary stats ──
 function avgOf(vals) { return vals.length ? vals.reduce((s,x)=>s+x,0)/vals.length : null; }
 
@@ -1682,18 +1757,42 @@ function makeGoalCard(goal, key, isBonus) {
   const card = document.createElement("div");
   if (isBonus) {
     card.className = "goal-card bonus-goal" + (checked ? " bonus-checked" : "");
+    const isPushups = goal.id === "pushups";
+    const pushupTotal = isPushups ? (data[key]?.pushup_count || 0) : 0;
     card.innerHTML = `
       <div class="goal-icon">${ph(goal.icon, 18)}</div>
-      <div class="goal-text">
-        <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
+      <div class="goal-text" style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;justify-content:space-between">
+          <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
+          ${checked ? '<span class="bonus-xp-chip">+5 XP</span>' : ""}
+          <div class="goal-check" style="flex-shrink:0">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2,7 6,11 12,3"/>
+            </svg>
+          </div>
+        </div>
         <div class="goal-sub">${goal.sub}</div>
-      </div>
-      ${checked ? '<span class="bonus-xp-chip">+5 XP</span>' : ""}
-      <div class="goal-check">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="2,7 6,11 12,3"/>
-        </svg>
+        ${isPushups ? `<div class="pushup-counter" onclick="event.stopPropagation()">
+          <div class="pushup-total">
+            <span class="pushup-total-num">${pushupTotal}</span>
+            <span>pushups today</span>
+          </div>
+          <div class="pushup-quick-row">
+            ${[2,5,7,10].map(n => `<button type="button" class="pushup-quick-btn" onclick="addPushups(${n})">+${n}</button>`).join('')}
+            <input class="pushup-manual-input" id="pushup-manual" type="number" inputmode="numeric"
+              placeholder="…" min="1"
+              onkeydown="if(event.key==='Enter'){addPushupsManual();event.preventDefault()}"
+              onclick="event.stopPropagation()">
+            <button type="button" class="pushup-reset-btn" onclick="resetPushups()">Reset</button>
+          </div>
+        </div>` : ""}
       </div>`;
+    card.onclick = isPushups ? null : () => toggleGoal(key, goal.id);
+    if (isPushups) {
+      card.style.cursor = "default";
+      card.style.alignItems = "flex-start";
+    }
+    return card;
   } else {
     card.className = "goal-card" + (checked ? " checked" : "");
     card.innerHTML = `
@@ -2293,6 +2392,16 @@ function renderSummary() {
           ${p7  ? statRow("Target days (7d)",  `${p7.hit}/${p7.n}`) : ""}
           ${p30 && p30.n > 7 ? statRow("Target days (30d)", `${p30.hit}/${p30.n}`) : ""}
         ` : ""}
+        ${(() => {
+          const pu7  = pushupStatsFor(last7Keys);
+          const pu30 = pushupStatsFor(last30Keys);
+          const puAll = pushupStatsFor(allKeys);
+          if (!puAll) return "";
+          return `<div style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin-top:12px;margin-bottom:8px">Pushups</div>
+            ${pu7  ? statRow("Last 7 days",  pu7.total.toLocaleString(),  `${pu7.days} active days`) : ""}
+            ${pu30 ? statRow("Last 30 days", pu30.total.toLocaleString(), `${pu30.days} active days`) : ""}
+            ${puAll ? statRow("All time",    puAll.total.toLocaleString(), `${puAll.days} days`) : ""}`;
+        })()}
         ${corr ? `
           <div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:8px;border-left:2px solid ${corr.positive ? "var(--gold)" : "var(--text-mute)"}">
             <div style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-mute);margin-bottom:4px">Insight</div>
@@ -3110,7 +3219,7 @@ function renderCheckinSection() {
       <div class="checkin-field">
         <div class="checkin-label" style="color:#4a6a9a">Rate your day</div>
         <div class="star-row">
-          ${[1,2,3,4,5].map(n => `<span class="star-btn${n <= er ? ' lit' : ''}" onclick="setEveningRating(${n})">${ph('star', 32)}</span>`).join('')}
+          ${[1,2,3,4,5].map(n => `<button type="button" class="star-btn${n <= er ? ' lit' : ''}" onclick="setEveningRating(${n})">${ph('star', 32)}</button>`).join('')}
         </div>
       </div>
       <div class="checkin-field">
