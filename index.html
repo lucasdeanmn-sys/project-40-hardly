@@ -842,6 +842,36 @@ textarea.checkin-input { resize: none; height: 60px; }
 .checkin-btn-eve { background: var(--blue); color: #fff; }
 
 /* Stars */
+.star-guide-btn {
+  background: none; border: 1px solid #2a3a5a; color: #4a6a9a;
+  border-radius: 50%; width: 18px; height: 18px; font-size: 10px; font-weight: 700;
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 6px; flex-shrink: 0; vertical-align: middle;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  transition: background 0.15s, color 0.15s;
+}
+.star-guide-btn:active { background: rgba(74,106,154,0.2); color: #6a9ace; }
+.star-guide-popup {
+  position: fixed; left: 16px; right: 16px;
+  background: #161820; border: 1px solid #2a2a3a;
+  border-radius: 14px; padding: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.7);
+  z-index: 999; animation: guideIn 0.18s ease;
+}
+@keyframes guideIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.star-guide-popup-title {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 12px;
+}
+.star-guide-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 7px 0; border-bottom: 1px solid #1e1e2a;
+  font-size: 13px; line-height: 1.4;
+}
+.star-guide-row:last-child { border-bottom: none; padding-bottom: 0; }
+.star-guide-stars { flex-shrink: 0; color: var(--gold); font-size: 12px; line-height: 1.5; min-width: 64px; }
+.star-guide-desc { color: #888; }
+.star-guide-desc strong { color: #bbb; font-weight: 600; }
 .star-row { display: flex; gap: 4px; padding: 2px 0 12px; }
 .star-btn {
   background: none; border: none; cursor: pointer; user-select: none;
@@ -3093,6 +3123,52 @@ function setEveningRating(n) {
   document.querySelectorAll('.star-btn').forEach((s, i) => s.classList.toggle('lit', i < n));
 }
 
+function toggleStarGuide(e) {
+  e.stopPropagation();
+  const existing = document.getElementById("star-guide-popup");
+  if (existing) { existing.remove(); return; }
+
+  const GUIDE = [
+    { stars: 1, desc: '<strong>Survival mode</strong> — the day beat you, you got through it' },
+    { stars: 2, desc: '<strong>Below the line</strong> — tried but fell short of your standard' },
+    { stars: 3, desc: '<strong>Solid day</strong> — did what you said you\'d do, most common rating' },
+    { stars: 4, desc: '<strong>Strong day</strong> — core goals hit, bonus goals stacked, brought good energy' },
+    { stars: 5, desc: '<strong>Everything clicked</strong> — rare, maybe 10–15% of days' },
+  ];
+
+  const popup = document.createElement("div");
+  popup.className = "star-guide-popup";
+  popup.id = "star-guide-popup";
+
+  // Position below the button
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  popup.style.top = (rect.bottom + 8 + window.scrollY) + "px";
+
+  popup.innerHTML = `
+    <div class="star-guide-popup-title">Rating Guide</div>
+    ${GUIDE.map(g => `
+      <div class="star-guide-row">
+        <span class="star-guide-stars">${'★'.repeat(g.stars)}${'☆'.repeat(5 - g.stars)}</span>
+        <span class="star-guide-desc">${g.desc}</span>
+      </div>`).join('')}`;
+
+  document.body.appendChild(popup);
+
+  // Dismiss on next tap anywhere
+  const dismiss = (ev) => {
+    if (!popup.contains(ev.target)) {
+      popup.remove();
+      document.removeEventListener("click", dismiss, true);
+      document.removeEventListener("touchstart", dismiss, true);
+    }
+  };
+  setTimeout(() => {
+    document.addEventListener("click", dismiss, true);
+    document.addEventListener("touchstart", dismiss, true);
+  }, 0);
+}
+
 function confirmMorningCheckin() {
   const key = toKey(currentDate);
   if (!data[key]) data[key] = {};
@@ -3217,7 +3293,7 @@ function renderCheckinSection() {
         </div>
       </div>
       <div class="checkin-field">
-        <div class="checkin-label" style="color:#4a6a9a">Rate your day</div>
+        <div class="checkin-label" style="color:#4a6a9a;display:flex;align-items:center">Rate your day <button type="button" class="star-guide-btn" onclick="toggleStarGuide(event)">?</button></div>
         <div class="star-row">
           ${[1,2,3,4,5].map(n => `<button type="button" class="star-btn${n <= er ? ' lit' : ''}" onclick="setEveningRating(${n})">${ph('star', 32)}</button>`).join('')}
         </div>
