@@ -3033,7 +3033,7 @@ async function runAIAnalysis() {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
+        max_tokens: 2500,
         system: `You are a performance coach analyzing data from someone tracking daily habits as part of a personal challenge called "Project 40 Hardly" — they are working toward their 40th birthday on September 28, 2026. They track three core goals (Coach Workout, Nutrition, Reading) and bonus goals including Morning Walk, Yoga/Stretching, Quick Push, Core Work, Morning Journal, and Protein 130g+. They also track sleep hours, protein intake, morning intentions, and evening reflections. Be direct, honest, and motivating — like a coach who has seen the data and is speaking frankly. No bullet lists — write flowing paragraphs as if talking to them.`,
         messages: [{
           role: 'user',
@@ -3066,6 +3066,10 @@ async function runAIAnalysis() {
 }
 
 function buildAnalysisPayload() {
+  const todayKey = toKey(new Date());
+  const nowHour  = new Date().getHours();
+  const dayComplete = nowHour >= 23; // after 11pm = day is done
+
   const allKeys = Object.keys(data)
     .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k))
     .sort((a, b) => b.localeCompare(a))
@@ -3073,22 +3077,42 @@ function buildAnalysisPayload() {
 
   return allKeys.map(k => {
     const d = data[k] || {};
+    const isToday    = k === todayKey;
     const coreScore  = CORE_GOALS.filter(g => d[g.id]).length;
     const bonusScore = BONUS_GOALS.filter(g => d[g.id]).length;
     const nonneg     = d.morning_nonneg ? GOALS.find(g => g.id === d.morning_nonneg)?.label : null;
     const nonnegHit  = d.morning_nonneg ? !!d[d.morning_nonneg] : null;
+
     const parts = [
       `Date: ${k}`,
       `Core: ${coreScore}/3 (${CORE_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
-      `Bonus: ${bonusScore}/6 (${BONUS_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
+      `Bonus: ${bonusScore}/${BONUS_GOALS.length} (${BONUS_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
     ];
-    if (nonneg)          parts.push(`Non-negotiable: ${nonneg} — ${nonnegHit ? 'HIT' : 'MISSED'}`);
+
+    // Non-negotiable: only call it MISSED if the day is complete
+    if (nonneg) {
+      if (nonnegHit) {
+        parts.push(`Non-negotiable: ${nonneg} — HIT`);
+      } else if (isToday && !dayComplete) {
+        parts.push(`Non-negotiable: ${nonneg} — declared, day still in progress`);
+      } else {
+        parts.push(`Non-negotiable: ${nonneg} — MISSED`);
+      }
+    }
+
     if (d.morning_intention) parts.push(`Intention: "${d.morning_intention}"`);
     if (d.evening_rating)    parts.push(`Evening rating: ${d.evening_rating}/5`);
     if (d.evening_hard)      parts.push(`Hard: "${d.evening_hard}"`);
     if (d.evening_proud)     parts.push(`Proud: "${d.evening_proud}"`);
     if (d.sleep != null)     parts.push(`Sleep: ${d.sleep}h`);
-    if (d.protein != null)   parts.push(`Protein: ${Math.round(d.protein)}g`);
+
+    // Protein: goal checkbox is the source of truth; tracker grams are supplementary
+    if (d.protein_goal) {
+      parts.push(`Protein: target HIT${d.protein != null ? ` (${Math.round(d.protein)}g logged)` : ''}`);
+    } else if (d.protein != null) {
+      parts.push(`Protein: target NOT hit (${Math.round(d.protein)}g logged, goal unchecked)`);
+    }
+
     return parts.join('\n');
   }).join('\n\n---\n\n');
 }
