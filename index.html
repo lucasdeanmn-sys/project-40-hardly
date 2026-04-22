@@ -3053,7 +3053,9 @@ async function runAIAnalysis() {
 📈 TRAJECTORY
 [one honest sentence about September 28th]
 
-Do not add any other sections, preamble, or closing remarks. Do not use the word 'journey'. Stick exactly to this format.`,
+Do not add any other sections, preamble, or closing remarks. Do not use the word 'journey'. Stick exactly to this format.
+
+Core goals (Coach Workout, Nutrition, Read) are the non-negotiables — evaluate these seriously. Bonus goals (Morning Walk, Yoga, Quick Push, Core Work, Morning Journal, Protein, Floss, Meds/Vitamins, Alcohol Free, Hydration, No Phone Before Bed) are celebrations of extra effort — never frame incomplete bonus goals as failures or shortcomings. If bonus goals are hit, acknowledge them positively. If they're not hit, ignore them entirely. The user intentionally designed the app this way to avoid over-commitment and burnout. Focus analysis almost entirely on the 3 core goals, sleep, and protein. The challenge officially started April 16th 2026 — do not reference or evaluate any data before that date.`,
         messages: [{
           role: 'user',
           content: `Here is my last 30 days of data:\n\n${payload}\n\nAnalyze my patterns. Cover: top 3 patterns or correlations, what my best days have in common, biggest recurring obstacles from the "what made today hard" entries, whether my sleep predicts goal completion, which goals I declare as non-negotiable but don't hit, one specific actionable recommendation, and an honest assessment of my trajectory toward September 28.`,
@@ -3089,8 +3091,9 @@ function buildAnalysisPayload() {
   const nowHour  = new Date().getHours();
   const dayComplete = nowHour >= 23; // after 11pm = day is done
 
+  const CHALLENGE_START = "2026-04-16";
   const allKeys = Object.keys(data)
-    .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k))
+    .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k) && k >= CHALLENGE_START)
     .sort((a, b) => b.localeCompare(a))
     .slice(0, 30);
 
