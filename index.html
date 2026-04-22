@@ -198,6 +198,30 @@ body {
   padding: 2px 6px; flex-shrink: 0; margin-left: auto;
 }
 
+/* ── Coach workout expansion ── */
+.goal-card.coach-card {
+  flex-direction: column; align-items: stretch; gap: 0; cursor: default;
+}
+.goal-card.coach-card:active { transform: none; }
+.coach-card-top {
+  display: flex; align-items: center; gap: 14px;
+  cursor: pointer; user-select: none;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.coach-card-top:active { opacity: 0.75; }
+.coach-workout-field {
+  margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border);
+}
+.coach-workout-input {
+  width: 100%; background: transparent;
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text-dim); font-size: 13px; padding: 8px 10px;
+  outline: none; font-family: inherit; -webkit-appearance: none;
+  box-sizing: border-box; transition: border-color 0.15s;
+}
+.coach-workout-input::placeholder { color: var(--text-mute); }
+.coach-workout-input:focus { border-color: #444; }
+
 /* ── Field inputs (legacy, used in modals) ── */
 .field-input {
   width: 100%; background: var(--surface);
@@ -2052,6 +2076,30 @@ function makeGoalCard(goal, key, isBonus) {
     card.onclick = () => toggleGoal(key, goal.id);
     return card;
   } else {
+    if (goal.id === 'coach') {
+      card.className = "goal-card coach-card" + (checked ? " checked" : "");
+      const workoutVal = (data[key]?.coach_workout || '').replace(/"/g, '&quot;');
+      card.innerHTML = `
+        <div class="coach-card-top" onclick="toggleGoal('${key}', 'coach')">
+          <div class="goal-icon">${ph(goal.icon, 20)}</div>
+          <div class="goal-text">
+            <div class="goal-label">${goal.label}${fireHtml}${stravaPin}</div>
+            <div class="goal-sub">${goal.sub}</div>
+          </div>
+          <div class="goal-check">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="2,7 6,11 12,3"/>
+            </svg>
+          </div>
+        </div>
+        <div class="coach-workout-field">
+          <input type="text" class="coach-workout-input"
+            placeholder="e.g. 45 min tempo run, 2hr endurance ride, strength circuit..."
+            value="${workoutVal}"
+            oninput="saveCoachWorkout(this.value)">
+        </div>`;
+      return card;
+    }
     card.className = "goal-card" + (checked ? " checked" : "");
     card.innerHTML = `
       <div class="goal-icon">${ph(goal.icon, 20)}</div>
@@ -2077,6 +2125,13 @@ function renderGoals() {
   bonusEl.innerHTML = "";
   CORE_GOALS.forEach(g  => coreEl.appendChild(makeGoalCard(g, key, false)));
   BONUS_GOALS.forEach(g => bonusEl.appendChild(makeGoalCard(g, key, true)));
+}
+
+function saveCoachWorkout(val) {
+  const key = toKey(currentDate);
+  if (!data[key]) data[key] = {};
+  data[key].coach_workout = val;
+  save();
 }
 
 function toggleGoal(key, goalId) {
@@ -2904,6 +2959,14 @@ function buildDayCard(key) {
     </div>`;
   }
 
+  // Coach workout description
+  if (d.coach_workout) {
+    rows += `<div class="journal-row">
+      <span class="journal-row-label">Workout</span>
+      <span class="journal-row-val">${escHtml(d.coach_workout)}</span>
+    </div>`;
+  }
+
   // Evening rating
   if (d.evening_checked_in && d.evening_rating) {
     const r = d.evening_rating;
@@ -3108,6 +3171,7 @@ function buildAnalysisPayload() {
     const parts = [
       `Date: ${k}`,
       `Core: ${coreScore}/3 (${CORE_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
+      ...(d.coach_workout ? [`Workout: "${d.coach_workout}"`] : []),
       `Bonus: ${bonusScore}/${BONUS_GOALS.length} (${BONUS_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
     ];
 
