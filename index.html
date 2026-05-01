@@ -1041,7 +1041,7 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
   <div class="celebration-box">
     <div class="celebration-icon" id="celebration-icon"></div>
     <div class="celebration-text">Perfect Day!</div>
-    <div class="celebration-sub" id="celebration-sub">All 3 core goals hit!</div>
+    <div class="celebration-sub" id="celebration-sub">Coach Workout done!</div>
   </div>
 </div>
 
@@ -1328,8 +1328,8 @@ function ph(name, size) {
 
 const GOALS = [
   { id: "coach",     label: "Coach Workout",             sub: "prescribed training",               icon: "person-simple-run",  group: "core"  },
-  { id: "nutrition", label: "Nutrition",                  sub: "on plan",                           icon: "fork-knife",   group: "core"  },
-  { id: "reading",   label: "Read",                      sub: "fiction or non-fiction, 10+ pages", icon: "book-open",    group: "core"  },
+  { id: "nutrition", label: "Nutrition",                  sub: "on plan",                           icon: "fork-knife",   group: "bonus", xp: 10 },
+  { id: "reading",   label: "Read",                      sub: "fiction or non-fiction, 10+ pages", icon: "book-open",    group: "bonus", xp: 10 },
   { id: "walk",      label: "Morning Walk",               sub: "outside time",                      icon: "footprints",        group: "bonus", xp: 5  },
   { id: "yoga",      label: "Yoga / Stretching",          sub: "morning or night",                  icon: "person-simple-tai-chi", group: "bonus", xp: 5  },
   { id: "pushups",   label: "Quick Push",                 sub: "opportunistic reps throughout the day", icon: "person-simple-tai-chi", group: "bonus", xp: 5  },
@@ -1344,10 +1344,10 @@ const GOALS = [
 ];
 const CORE_GOALS  = GOALS.filter(g => g.group === "core");
 const BONUS_GOALS = GOALS.filter(g => g.group === "bonus");
-const CORE_COUNT  = CORE_GOALS.length; // 3
+const CORE_COUNT  = CORE_GOALS.length; // 1
 
 const BIRTHDAY       = new Date(2026, 8, 28);
-const JOURNEY_START  = new Date(2026, 3, 16); // Apr 16
+const JOURNEY_START  = new Date(2026, 4, 1);  // May 1
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const DAYS   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
@@ -1382,7 +1382,7 @@ function toKey(d) {
 function todayKey() { return toKey(new Date()); }
 function isToday(d) { return toKey(d) === todayKey(); }
 function getDay(key)       { return data[key] || {}; }
-function getScore(key)     { return CORE_GOALS.filter(g => data[key]?.[g.id]).length; }   // 0–3 core
+function getScore(key)     { return CORE_GOALS.filter(g => data[key]?.[g.id]).length; }   // 0–1 core
 function getBonusScore(key){ return BONUS_GOALS.filter(g => data[key]?.[g.id]).length; }  // 0–4 bonus
 
 // ── Streaks ──
@@ -1645,9 +1645,9 @@ function sleepCorrelation(allKeys) {
   const ga = avgOf(good), pa = avgOf(poor);
   const diff = ga - pa;
   if (diff > 0.3)
-    return { text: `Your best goal days follow nights with 7.5+ hrs sleep — avg ${ga.toFixed(1)}/3 core goals vs ${pa.toFixed(1)}/3 after shorter nights.`, positive: true };
+    return { text: `Your best goal days follow nights with 7.5+ hrs sleep — avg ${ga.toFixed(1)}/${CORE_COUNT} core vs ${pa.toFixed(1)}/${CORE_COUNT} after shorter nights.`, positive: true };
   if (diff < -0.3)
-    return { text: `You show up regardless of sleep — ${pa.toFixed(1)}/3 core goals even after short nights (vs ${ga.toFixed(1)}/3 after 7.5+ hrs). Respect.`, positive: true };
+    return { text: `You show up regardless of sleep — ${pa.toFixed(1)}/${CORE_COUNT} core even after short nights (vs ${ga.toFixed(1)}/${CORE_COUNT} after 7.5+ hrs). Respect.`, positive: true };
   return { text: `No strong sleep→performance pattern yet (${good.length + poor.length} days compared). Keep logging.`, positive: false };
 }
 
@@ -1714,7 +1714,7 @@ function computeCoins() {
     const [y, m, d] = k.split("-").map(Number);
     if (new Date(y, m - 1, d) > today) return;
     const score = getScore(k);
-    if (score === CORE_COUNT) { coins++; }                               // 3/3 core: +1 coin
+    if (score === CORE_COUNT) { coins++; }                               // 1/1 core: +1 coin
     else if (isBossDay(k) && score > 0) { coins = Math.max(0, coins - 1); } // boss loss: −1 coin
   });
   return coins;
@@ -1791,7 +1791,7 @@ function renderGamificationBar() {
     const lost  = isBossDay(key) && data[key] && score > 0 && score < CORE_COUNT && !isTod;
     const desc  = won  ? `<span style="color:var(--green)">Boss defeated — double XP earned</span>`
                 : lost ? `<span style="color:var(--red)">Defeated — lost 1 Hardly Coin</span>`
-                       : `Hit 3/3 core goals to win. Win = 2× XP, lose = −1 coin`;
+                       : `Hit the Coach Workout to win. Win = 2× XP, lose = −1 coin`;
     bossBanner = `<div class="boss-day-banner">
       <div class="boss-emoji">${won ? ph('trophy', 22) : ph('skull', 22)}</div>
       <div class="boss-info">
@@ -1852,7 +1852,7 @@ function buildShareMessage() {
   return [
     `📅 Week of ${fmt(ws)} – ${fmt(we)}`,
     `━━━━━━━━━━━━━━━━━━`,
-    `🎯 ${perfectDays}/7 perfect days (3/3 core)`,
+    `🎯 ${perfectDays}/7 perfect days (${CORE_COUNT}/${CORE_COUNT} core)`,
     totalBonusHits > 0 ? `⭐ ${totalBonusHits} bonus goals hit` : null,
     `🔥 Best core streak: ${bestStreak} day${bestStreak !== 1 ? "s" : ""}`,
     `⚡ Lv ${lvl.idx} ${lvl.name} · ${xp.toLocaleString()} XP`,
@@ -2400,7 +2400,7 @@ function renderContribGraph() {
       if (isT) cls += ' is-today';
 
       const title = inRange
-        ? `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} — ${isFuture ? '–' : score + '/3 core'}`
+        ? `${DAYS[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()} — ${isFuture ? '–' : score + '/' + CORE_COUNT + ' core'}`
         : '';
 
       const onclick = inRange && !isFuture
@@ -2616,7 +2616,7 @@ function renderSummary() {
         <div class="progress-bar-label"><span>Journey to 40</span><span>${journeyPct}%</span></div>
         <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${journeyPct}%"></div></div>
         <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-mute);margin-top:4px">
-          <span>Apr 16</span><span>${daysToGo} days left</span><span>Sep 28</span>
+          <span>May 1</span><span>${daysToGo} days left</span><span>Sep 28</span>
         </div>
       </div>
     </div>
@@ -2667,7 +2667,7 @@ function renderSummary() {
         </div>
       </div>
       <div style="font-size:11px;color:var(--text-mute);margin-top:8px">
-        Every Sunday. Win with 3/3 core for double XP. Lose with a partial day = −1 coin.
+        Every Sunday. Hit the Coach Workout for double XP. Skip it = −1 coin.
       </div>
     </div>
 
@@ -2934,7 +2934,7 @@ function buildDayCard(key) {
 
   const coreScore  = CORE_GOALS.filter(g => d[g.id]).length;
   const bonusScore = BONUS_GOALS.filter(g => d[g.id]).length;
-  const scoreStr   = `Core: ${coreScore}/3 · Bonus: ${bonusScore}/6`;
+  const scoreStr   = `Core: ${coreScore}/${CORE_GOALS.length} · Bonus: ${bonusScore}/${BONUS_GOALS.length}`;
 
   let rows = '';
 
@@ -3118,7 +3118,7 @@ async function runAIAnalysis() {
 
 Do not add any other sections, preamble, or closing remarks. Do not use the word 'journey'. Stick exactly to this format.
 
-Core goals (Coach Workout, Nutrition, Read) are the non-negotiables — evaluate these seriously. Bonus goals (Morning Walk, Yoga, Quick Push, Core Work, Morning Journal, Protein, Floss, Meds/Vitamins, Alcohol Free, Hydration, No Phone Before Bed) are celebrations of extra effort — never frame incomplete bonus goals as failures or shortcomings. If bonus goals are hit, acknowledge them positively. If they're not hit, ignore them entirely. The user intentionally designed the app this way to avoid over-commitment and burnout. Focus analysis almost entirely on the 3 core goals, sleep, and protein. The challenge officially started April 16th 2026 — do not reference or evaluate any data before that date.`,
+The single core goal is Coach Workout — this is the only non-negotiable. Evaluate it seriously. Bonus goals (Nutrition, Read, Morning Walk, Yoga, Quick Push, Core Work, Morning Journal, Protein, Floss, Meds/Vitamins, Alcohol Free, Hydration, No Phone Before Bed) are celebrations of extra effort — never frame incomplete bonus goals as failures or shortcomings. If bonus goals are hit, acknowledge them positively. If they're not hit, ignore them entirely. The user intentionally designed the app this way to avoid over-commitment and burnout. Focus analysis almost entirely on the Coach Workout, sleep, and protein. The challenge officially started May 1st 2026 — do not reference or evaluate any data before that date.`,
         messages: [{
           role: 'user',
           content: `Here is my last 30 days of data:\n\n${payload}\n\nAnalyze my patterns. Cover: top 3 patterns or correlations, what my best days have in common, biggest recurring obstacles from the "what made today hard" entries, whether my sleep predicts goal completion, which goals I declare as non-negotiable but don't hit, one specific actionable recommendation, and an honest assessment of my trajectory toward September 28.`,
@@ -3154,7 +3154,7 @@ function buildAnalysisPayload() {
   const nowHour  = new Date().getHours();
   const dayComplete = nowHour >= 23; // after 11pm = day is done
 
-  const CHALLENGE_START = "2026-04-16";
+  const CHALLENGE_START = "2026-05-01";
   const allKeys = Object.keys(data)
     .filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k) && k >= CHALLENGE_START)
     .sort((a, b) => b.localeCompare(a))
@@ -3170,7 +3170,7 @@ function buildAnalysisPayload() {
 
     const parts = [
       `Date: ${k}`,
-      `Core: ${coreScore}/3 (${CORE_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
+      `Core: ${coreScore}/${CORE_COUNT} (${CORE_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
       ...(d.coach_workout ? [`Workout: "${d.coach_workout}"`] : []),
       `Bonus: ${bonusScore}/${BONUS_GOALS.length} (${BONUS_GOALS.filter(g=>d[g.id]).map(g=>g.label).join(', ') || 'none'})`,
     ];
