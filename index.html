@@ -1126,7 +1126,7 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
       </svg>
       <div class="ring-text">
         <div class="ring-score" id="ring-score">0</div>
-        <div class="ring-total">/ 3</div>
+        <div class="ring-total" id="ring-total"></div>
       </div>
     </div>
   </div>
@@ -2180,6 +2180,8 @@ function updateRing() {
   fill.classList.toggle("ring-active",  score > 0 && score < CORE_COUNT);
   fill.classList.toggle("ring-perfect", score === CORE_COUNT);
   document.getElementById("ring-score").textContent = score;
+  const totalEl = document.getElementById("ring-total");
+  if (totalEl) totalEl.textContent = CORE_COUNT > 1 ? `/ ${CORE_COUNT}` : '';
 }
 
 function updateInputs() {
@@ -3332,8 +3334,8 @@ async function stravaSyncToday() {
         if (!data[key].coach) { data[key].coach = true; checked.push("coach"); }
 
       // ── Morning Walk ─────────────────────────────────────────────
-      // Walk or Hike any duration before 10 AM
-      } else if (isWalkHike && hour < 10) {
+      // Walk or Hike any duration, any time
+      } else if (isWalkHike) {
         toastLines.push(`${t} ${mins} min → ${STRAVA_GOAL_LABELS.walk} ✓`);
         if (!data[key].walk) { data[key].walk = true; checked.push("walk"); }
 
