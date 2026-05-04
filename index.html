@@ -1094,7 +1094,19 @@ input[type="number"].checkin-input { -moz-appearance: textfield; }
     <button class="settings-close-btn" onclick="closeSettings()">×</button>
   </div>
   <div class="settings-body">
-    <div class="settings-section-label">AI Analysis</div>
+    <div class="settings-section-label">Sync</div>
+    <div class="settings-field">
+      <label class="settings-field-label" for="settings-sync-token">Sync Token</label>
+      <div class="settings-input-wrap">
+        <input class="settings-key-input" id="settings-sync-token" type="password"
+          placeholder="Your sync token" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button type="button" class="settings-eye-btn" id="settings-sync-eye-btn" onclick="toggleSyncTokenVisibility()">
+          <span id="settings-sync-eye-icon"></span>
+        </button>
+      </div>
+      <div class="settings-hint">Keeps your data in sync across devices. If you lose local data, save your token here to restore from the cloud.</div>
+    </div>
+    <div class="settings-section-label" style="margin-top:16px">AI Analysis</div>
     <div class="settings-field">
       <label class="settings-field-label" for="settings-api-key">Anthropic API Key</label>
       <div class="settings-input-wrap">
@@ -1934,16 +1946,28 @@ function load() {
 // ── Setup modal ──
 // ── Settings panel ──
 function openSettings() {
+  const syncInput = document.getElementById("settings-sync-token");
+  if (syncInput) { syncInput.value = getSyncToken(); syncInput.type = "password"; }
+  const syncEye = document.getElementById("settings-sync-eye-icon");
+  if (syncEye) syncEye.innerHTML = ph("eye", 18);
+
   const input = document.getElementById("settings-api-key");
-  if (input) {
-    input.value = localStorage.getItem("anthropic_api_key") || "";
-    input.type = "password";
-  }
+  if (input) { input.value = localStorage.getItem("anthropic_api_key") || ""; input.type = "password"; }
   const eyeIcon = document.getElementById("settings-eye-icon");
   if (eyeIcon) eyeIcon.innerHTML = ph("eye", 18);
+
   const savedMsg = document.getElementById("settings-saved-msg");
   if (savedMsg) savedMsg.style.display = "none";
   document.getElementById("settings-panel").style.display = "flex";
+}
+
+function toggleSyncTokenVisibility() {
+  const input = document.getElementById("settings-sync-token");
+  const icon  = document.getElementById("settings-sync-eye-icon");
+  if (!input) return;
+  const isHidden = input.type === "password";
+  input.type = isHidden ? "text" : "password";
+  if (icon) icon.innerHTML = ph(isHidden ? "eye-slash" : "eye", 18);
 }
 
 function closeSettings() {
@@ -1960,12 +1984,24 @@ function toggleKeyVisibility() {
 }
 
 function saveSettings() {
+  // Sync token
+  const syncVal = (document.getElementById("settings-sync-token")?.value || "").trim();
+  const prevToken = getSyncToken();
+  if (syncVal) {
+    setSyncToken(syncVal);
+    if (syncVal !== prevToken) syncLoad().then(() => renderToday());
+  } else {
+    localStorage.removeItem("p40_sync_token");
+  }
+
+  // Anthropic API key
   const val = (document.getElementById("settings-api-key")?.value || "").trim();
   if (val) {
     localStorage.setItem("anthropic_api_key", val);
   } else {
     localStorage.removeItem("anthropic_api_key");
   }
+
   const savedMsg = document.getElementById("settings-saved-msg");
   if (savedMsg) {
     savedMsg.style.display = "inline-flex";
